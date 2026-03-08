@@ -3,11 +3,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLogin } from '@/hooks/useAuth';
-import { GraduationCap, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import schoolflowLogo from '@/assets/schoolflow-logo.png';
 
 const loginSchema = z.object({
-  email: z.string().email('Email invalide'),
+  username: z.string().min(1, "Nom d'utilisateur requis"),
   password: z.string().min(1, 'Mot de passe requis'),
 });
 
@@ -21,7 +21,7 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginForm) => loginMutation.mutate({ email: data.email, password: data.password });
+  const onSubmit = (data: LoginForm) => loginMutation.mutate({ username: data.username, password: data.password });
 
   return (
     <div className="min-h-screen flex">
@@ -35,7 +35,6 @@ export default function LoginPage() {
             Gestion scolaire simplifiée. Gérez vos élèves, familles et finances en un seul endroit.
           </p>
         </div>
-        {/* Decorative shapes */}
         <div className="absolute top-20 left-20 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-20 w-48 h-48 bg-success/10 rounded-full blur-3xl" />
       </div>
@@ -53,14 +52,14 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Nom d'utilisateur</label>
               <input
-                {...register('email')}
-                type="email"
-                placeholder="votre@email.com"
+                {...register('username')}
+                type="text"
+                placeholder="admin"
                 className="w-full px-4 py-2.5 border rounded-lg bg-card text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
               />
-              {errors.email && <p className="text-xs text-destructive mt-1">{errors.email.message}</p>}
+              {errors.username && <p className="text-xs text-destructive mt-1">{errors.username.message}</p>}
             </div>
 
             <div>
