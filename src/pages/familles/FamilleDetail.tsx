@@ -16,7 +16,7 @@ import { Banknote, Percent } from 'lucide-react';
 
 const editFamilleSchema = z.object({
   nomPere: z.string().min(1, 'Nom requis'),
-  prenomPere: z.string().optional(),
+  prenomPere: z.string().default(''),
   telephonePrincipal: z.string().min(1, 'Téléphone requis'),
   emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
   nomMere: z.string().optional(),
