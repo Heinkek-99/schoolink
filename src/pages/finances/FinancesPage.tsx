@@ -2,23 +2,18 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { KpiSkeleton } from '@/components/shared/Skeletons';
 import { useDashboardStats } from '@/hooks/useDashboard';
-import { Banknote, TrendingUp, AlertTriangle, Percent, Plus } from 'lucide-react';
+import { Banknote, AlertTriangle, Percent, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency } from '@/utils/formatCurrency';
 
-const encaissementsMock = [
-  { mois: 'Oct', montant: 4500000 },
-  { mois: 'Nov', montant: 3800000 },
-  { mois: 'Déc', montant: 5200000 },
-  { mois: 'Jan', montant: 6100000 },
-  { mois: 'Fév', montant: 4900000 },
-  { mois: 'Mar', montant: 5800000 },
-];
-
 export default function FinancesPage() {
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats();
+
+  const classeChartData = stats?.statistiquesParClasse
+    ?.filter((c) => c.nombreEleves > 0)
+    .map((c) => ({ nom: c.nomClasse, taux: c.tauxRecouvrement })) || [];
 
   return (
     <div>
@@ -36,25 +31,29 @@ export default function FinancesPage() {
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
           <>
-            <KpiCard title="Total encaissé" value={stats?.totalEncaissements ?? 0} icon={Banknote} isCurrency color="success" />
-            <KpiCard title="Total impayés" value={stats?.totalImpayes ?? 0} icon={AlertTriangle} isCurrency color="destructive" />
-            <KpiCard title="Taux recouvrement" value={`${stats?.tauxRecouvrement ?? 0}%`} icon={Percent} color="primary" />
-            <KpiCard title="Tendance" value="+12%" icon={TrendingUp} color="success" trend="vs mois précédent" trendUp />
+            <KpiCard title="Frais attendus" value={stats?.totalFraisAttendus ?? 0} icon={Banknote} isCurrency color="primary" />
+            <KpiCard title="Total encaissé" value={stats?.totalEncaisse ?? 0} icon={Banknote} isCurrency color="success" />
+            <KpiCard title="Solde impayé" value={stats?.soldeGlobal ?? 0} icon={AlertTriangle} isCurrency color="destructive" />
+            <KpiCard title="Taux recouvrement" value={`${stats?.tauxRecouvrement ?? 0}%`} icon={Percent} color="warning" />
           </>
         )}
       </div>
 
       <div className="bg-card rounded-xl border shadow-sm p-5">
-        <h3 className="font-semibold text-foreground mb-4">Encaissements mensuels</h3>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={encaissementsMock}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" />
-            <XAxis dataKey="mois" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000000}M`} />
-            <Tooltip formatter={(value: number) => formatCurrency(value)} />
-            <Bar dataKey="montant" fill="hsl(160,84%,39%)" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        <h3 className="font-semibold text-foreground mb-4">Taux de recouvrement par classe</h3>
+        {classeChartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={classeChartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" />
+              <XAxis dataKey="nom" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
+              <Tooltip formatter={(value: number) => `${value}%`} />
+              <Bar dataKey="taux" fill="hsl(160,84%,39%)" radius={[6, 6, 0, 0]} name="Taux %" />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground text-sm">Aucune donnée disponible</div>
+        )}
       </div>
     </div>
   );

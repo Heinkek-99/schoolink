@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { ArrowLeft, ArrowRight, Check, Banknote, Users as UsersIcon, ListChecks, FileCheck } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useFamilles } from '@/hooks/useFamilles';
+import { useFamille } from '@/hooks/useFamilles';
 import { useCreatePaiement } from '@/hooks/usePaiements';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { PAYMENT_MODES } from '@/utils/constants';
@@ -27,9 +28,12 @@ export default function PaiementCreate() {
   const createMutation = useCreatePaiement();
 
   const [step, setStep] = useState(1);
-  const [selectedFamille, setSelectedFamille] = useState<Famille | null>(null);
+  const [selectedFamilleId, setSelectedFamilleId] = useState<string | null>(null);
   const [familleSearch, setFamilleSearch] = useState('');
   const [ventilations, setVentilations] = useState<Record<string, number>>({});
+
+  // Fetch full famille detail when selected
+  const { data: familleDetail } = useFamille(selectedFamilleId || '');
 
   const { register, handleSubmit, formState: { errors }, getValues } = useForm<PaiementForm>({
     resolver: zodResolver(paiementSchema),
@@ -37,7 +41,7 @@ export default function PaiementCreate() {
   });
 
   const filteredFamilles = familles?.filter((f) =>
-    !familleSearch || `${f.nom} ${f.prenom}`.toLowerCase().includes(familleSearch.toLowerCase())
+    !familleSearch || `${f.nomPere} ${f.prenomPere}`.toLowerCase().includes(familleSearch.toLowerCase())
   );
 
   const totalVentile = Object.values(ventilations).reduce((a, b) => a + (b || 0), 0);
@@ -49,24 +53,29 @@ export default function PaiementCreate() {
     { num: 4, label: 'Confirmation', icon: FileCheck },
   ];
 
-  const onStep2Submit = (data: PaiementForm) => {
+  const onSelectFamille = (f: Famille) => {
+    setSelectedFamilleId(f.id);
+    setStep(2);
+  };
+
+  const onStep2Submit = () => {
     setStep(3);
-    // Initialize ventilations
-    if (selectedFamille?.enfants) {
+    // Initialize ventilations from detail
+    if (familleDetail?.enfants) {
       const init: Record<string, number> = {};
-      selectedFamille.enfants.forEach((e) => { init[e.id] = 0; });
+      familleDetail.enfants.forEach((e) => { init[e.id] = 0; });
       setVentilations(init);
     }
   };
 
   const autoDistribute = () => {
-    if (!selectedFamille?.enfants) return;
+    if (!familleDetail?.enfants) return;
     const montant = getValues('montant');
-    const totalDue = selectedFamille.enfants.reduce((a, e) => a + e.solde, 0);
+    const totalDue = familleDetail.enfants.reduce((a, e) => a + e.solde, 0);
     const newV: Record<string, number> = {};
     let remaining = montant;
 
-    selectedFamille.enfants.forEach((e) => {
+    familleDetail.enfants.forEach((e) => {
       if (totalDue > 0) {
         const share = Math.min(Math.round((e.solde / totalDue) * montant), remaining, e.solde);
         newV[e.id] = share;
@@ -84,13 +93,13 @@ export default function PaiementCreate() {
       .filter(([, v]) => v > 0)
       .map(([eleveId, montant]) => ({
         eleveId,
-        eleveNom: selectedFamille?.enfants?.find((e) => e.id === eleveId)?.prenom || '',
+        eleveNom: familleDetail?.enfants?.find((e) => e.id === eleveId)?.prenom || '',
         montant,
       }));
 
     createMutation.mutate(
       {
-        familleId: selectedFamille!.id,
+        familleId: selectedFamilleId!,
         date: values.date,
         montant: values.montant,
         mode: values.mode,
@@ -100,7 +109,7 @@ export default function PaiementCreate() {
       {
         onSuccess: () => {
           generateReceiptPDF({
-            familleNom: `${selectedFamille!.nom} ${selectedFamille!.prenom}`,
+            familleNom: `${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
             date: values.date,
             montant: values.montant,
             mode: values.mode,
@@ -112,6 +121,8 @@ export default function PaiementCreate() {
       }
     );
   };
+
+  const selectedFamilleFromList = familles?.find(f => f.id === selectedFamilleId);
 
   return (
     <div>
@@ -136,7 +147,7 @@ export default function PaiementCreate() {
         ))}
       </div>
 
-      {/* Step 1: Select Family */}
+      {/* Step 1 */}
       {step === 1 && (
         <div className="bg-card rounded-xl border shadow-sm p-6 max-w-2xl">
           <h2 className="text-lg font-semibold mb-4">Sélectionner une famille</h2>
@@ -150,15 +161,15 @@ export default function PaiementCreate() {
             {filteredFamilles?.map((f) => (
               <button
                 key={f.id}
-                onClick={() => { setSelectedFamille(f); setStep(2); }}
+                onClick={() => onSelectFamille(f)}
                 className={`w-full text-left p-3 rounded-lg border transition-colors hover:bg-muted/50 ${
-                  selectedFamille?.id === f.id ? 'border-primary bg-primary/5' : ''
+                  selectedFamilleId === f.id ? 'border-primary bg-primary/5' : ''
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">{f.nom} {f.prenom}</p>
-                    <p className="text-xs text-muted-foreground">{f.nombreEnfants} enfant(s) · Solde: {formatCurrency(f.solde)}</p>
+                    <p className="font-medium">{f.nomPere} {f.prenomPere}</p>
+                    <p className="text-xs text-muted-foreground">{f.nombreEnfants} enfant(s) · Solde: {formatCurrency(f.soldeGlobal)}</p>
                   </div>
                 </div>
               </button>
@@ -167,11 +178,11 @@ export default function PaiementCreate() {
         </div>
       )}
 
-      {/* Step 2: Payment Details */}
+      {/* Step 2 */}
       {step === 2 && (
         <form onSubmit={handleSubmit(onStep2Submit)} className="bg-card rounded-xl border shadow-sm p-6 max-w-2xl">
           <h2 className="text-lg font-semibold mb-4">Détails du paiement</h2>
-          <p className="text-sm text-muted-foreground mb-4">Famille: <strong>{selectedFamille?.nom} {selectedFamille?.prenom}</strong></p>
+          <p className="text-sm text-muted-foreground mb-4">Famille: <strong>{selectedFamilleFromList?.nomPere} {selectedFamilleFromList?.prenomPere}</strong></p>
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Date *</label>
@@ -205,7 +216,7 @@ export default function PaiementCreate() {
         </form>
       )}
 
-      {/* Step 3: Ventilation */}
+      {/* Step 3 */}
       {step === 3 && (
         <div className="bg-card rounded-xl border shadow-sm p-6 max-w-2xl">
           <div className="flex items-center justify-between mb-4">
@@ -214,7 +225,7 @@ export default function PaiementCreate() {
           </div>
 
           <div className="space-y-3">
-            {selectedFamille?.enfants?.map((e) => (
+            {familleDetail?.enfants?.map((e) => (
               <div key={e.id} className="border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
                   <div>
@@ -258,19 +269,19 @@ export default function PaiementCreate() {
         </div>
       )}
 
-      {/* Step 4: Confirmation */}
+      {/* Step 4 */}
       {step === 4 && (
         <div className="bg-card rounded-xl border shadow-sm p-6 max-w-2xl">
           <h2 className="text-lg font-semibold mb-4">Confirmation</h2>
           <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-            <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille?.nom} {selectedFamille?.prenom}</strong></p>
+            <p><span className="text-muted-foreground">Famille:</span> <strong>{familleDetail?.nomPere} {familleDetail?.prenomPere}</strong></p>
             <p><span className="text-muted-foreground">Date:</span> <strong>{getValues('date')}</strong></p>
             <p><span className="text-muted-foreground">Montant:</span> <strong>{formatCurrency(getValues('montant'))}</strong></p>
             <p><span className="text-muted-foreground">Mode:</span> <strong>{getValues('mode')}</strong></p>
             {getValues('reference') && <p><span className="text-muted-foreground">Référence:</span> <strong>{getValues('reference')}</strong></p>}
             <hr className="my-3" />
             <p className="font-medium">Ventilation:</p>
-            {selectedFamille?.enfants?.filter((e) => ventilations[e.id] > 0).map((e) => (
+            {familleDetail?.enfants?.filter((e) => ventilations[e.id] > 0).map((e) => (
               <p key={e.id} className="pl-3">{e.prenom} {e.nom}: <strong>{formatCurrency(ventilations[e.id])}</strong></p>
             ))}
           </div>

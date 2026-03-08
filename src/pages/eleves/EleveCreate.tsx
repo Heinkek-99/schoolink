@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Check, User, Users, ClipboardCheck, Plus } from 
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useCreateEleve, useClasses } from '@/hooks/useEleves';
 import { useFamilles, useCreateFamille } from '@/hooks/useFamilles';
-import { generateMatricule, ANNEE_SCOLAIRE } from '@/utils/constants';
+import { ANNEE_SCOLAIRE } from '@/utils/constants';
 import { TableSkeleton } from '@/components/shared/Skeletons';
 
 const step1Schema = z.object({
@@ -24,10 +24,10 @@ const step2Schema = z.object({
 });
 
 const newFamilleSchema = z.object({
-  nom: z.string().min(1, 'Nom requis').max(100),
-  prenom: z.string().min(1, 'Prénom requis').max(100),
-  telephone: z.string().min(1, 'Téléphone requis').max(20),
-  email: z.string().email('Email invalide').optional().or(z.literal('')),
+  nomPere: z.string().min(1, 'Nom requis'),
+  prenomPere: z.string().default(''),
+  telephonePrincipal: z.string().min(1, 'Téléphone requis'),
+  emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
   adresse: z.string().optional(),
   ville: z.string().optional(),
 });
@@ -66,16 +66,13 @@ export default function EleveCreate() {
   };
 
   const handleCreateFamille = (data: NewFamilleForm) => {
-    createFamilleMutation.mutate(
-      { nom: data.nom, prenom: data.prenom, telephone: data.telephone, email: data.email, adresse: data.adresse, ville: data.ville },
-      {
-        onSuccess: (newFamille) => {
-          form2.setValue('familleId', newFamille.id);
-          setShowNewFamille(false);
-          formFamille.reset();
-        },
-      }
-    );
+    createFamilleMutation.mutate(data as any, {
+      onSuccess: (newFamille) => {
+        form2.setValue('familleId', newFamille.id);
+        setShowNewFamille(false);
+        formFamille.reset();
+      },
+    });
   };
 
   const handleConfirm = () => {
@@ -95,7 +92,6 @@ export default function EleveCreate() {
     );
   };
 
-  const matriculePreview = generateMatricule(2024, Math.floor(Math.random() * 999) + 1);
   const selectedFamille = familles?.find((f) => f.id === form2.watch('familleId'));
   const selectedClasse = classes?.find((c) => c.id === form2.watch('classeId'));
 
@@ -177,11 +173,7 @@ export default function EleveCreate() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium">Famille *</label>
-                <button
-                  type="button"
-                  onClick={() => setShowNewFamille(!showNewFamille)}
-                  className="flex items-center gap-1 text-xs text-primary hover:underline"
-                >
+                <button type="button" onClick={() => setShowNewFamille(!showNewFamille)} className="flex items-center gap-1 text-xs text-primary hover:underline">
                   <Plus size={14} /> {showNewFamille ? 'Choisir existante' : 'Nouvelle famille'}
                 </button>
               </div>
@@ -191,25 +183,22 @@ export default function EleveCreate() {
                   <p className="text-sm font-medium text-muted-foreground">Créer une nouvelle famille</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium mb-1 block">Nom *</label>
-                      <input {...formFamille.register('nom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                      {formFamille.formState.errors.nom && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.nom.message}</p>}
+                      <label className="text-xs font-medium mb-1 block">Nom du père *</label>
+                      <input {...formFamille.register('nomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1 block">Prénom *</label>
-                      <input {...formFamille.register('prenom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                      {formFamille.formState.errors.prenom && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.prenom.message}</p>}
+                      <label className="text-xs font-medium mb-1 block">Prénom du père</label>
+                      <input {...formFamille.register('prenomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium mb-1 block">Téléphone *</label>
-                    <input {...formFamille.register('telephone')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                    {formFamille.formState.errors.telephone && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.telephone.message}</p>}
+                    <input {...formFamille.register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium mb-1 block">Email</label>
-                      <input {...formFamille.register('email')} type="email" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      <input {...formFamille.register('emailPere')} type="email" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                     </div>
                     <div>
                       <label className="text-xs font-medium mb-1 block">Ville</label>
@@ -232,11 +221,7 @@ export default function EleveCreate() {
                   ) : !familles?.length ? (
                     <div className="border rounded-lg p-4 text-center text-sm text-muted-foreground">
                       <p>Aucune famille trouvée.</p>
-                      <button
-                        type="button"
-                        onClick={() => setShowNewFamille(true)}
-                        className="mt-2 text-primary hover:underline flex items-center gap-1 mx-auto"
-                      >
+                      <button type="button" onClick={() => setShowNewFamille(true)} className="mt-2 text-primary hover:underline flex items-center gap-1 mx-auto">
                         <Plus size={14} /> Créer une famille
                       </button>
                     </div>
@@ -244,15 +229,15 @@ export default function EleveCreate() {
                     <select {...form2.register('familleId')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30">
                       <option value="">Sélectionner une famille</option>
                       {familles.map((f) => (
-                        <option key={f.id} value={f.id}>{f.nom} {f.prenom} — {f.telephone}</option>
+                        <option key={f.id} value={f.id}>{f.nomPere} {f.prenomPere} — {f.telephonePrincipal}</option>
                       ))}
                     </select>
                   )}
                   {form2.formState.errors.familleId && <p className="text-xs text-destructive mt-1">{form2.formState.errors.familleId.message}</p>}
                   {selectedFamille && (
                     <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
-                      <p className="font-medium">{selectedFamille.nom} {selectedFamille.prenom}</p>
-                      <p className="text-muted-foreground text-xs">{selectedFamille.telephone} · {selectedFamille.nombreEnfants} enfant(s)</p>
+                      <p className="font-medium">{selectedFamille.nomPere} {selectedFamille.prenomPere}</p>
+                      <p className="text-muted-foreground text-xs">{selectedFamille.telephonePrincipal} · {selectedFamille.nombreEnfants} enfant(s)</p>
                     </div>
                   )}
                 </>
@@ -268,7 +253,7 @@ export default function EleveCreate() {
                 <select {...form2.register('classeId')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30">
                   <option value="">Sélectionner une classe</option>
                   {classes?.map((c) => (
-                    <option key={c.id} value={c.id}>{c.nom} — {c.niveau}</option>
+                    <option key={c.id} value={c.id}>{c.nom} ({c.effectif}/{c.capaciteMax})</option>
                   ))}
                 </select>
               )}
@@ -300,9 +285,8 @@ export default function EleveCreate() {
             <p><span className="text-muted-foreground">Date de naissance:</span> <strong>{step1Data?.dateNaissance}</strong></p>
             <p><span className="text-muted-foreground">Lieu:</span> <strong>{step1Data?.lieuNaissance}</strong></p>
             <p><span className="text-muted-foreground">Sexe:</span> <strong>{step1Data?.sexe === 'M' ? 'Masculin' : 'Féminin'}</strong></p>
-            <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille?.nom} {selectedFamille?.prenom}</strong></p>
+            <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille?.nomPere} {selectedFamille?.prenomPere}</strong></p>
             <p><span className="text-muted-foreground">Classe:</span> <strong>{selectedClasse?.nom || '-'}</strong></p>
-            <p><span className="text-muted-foreground">Matricule (prévisualisation):</span> <span className="status-badge-active font-mono">{matriculePreview}</span></p>
             <p><span className="text-muted-foreground">Année scolaire:</span> <strong>{ANNEE_SCOLAIRE}</strong></p>
           </div>
           <div className="flex justify-between mt-6">

@@ -3,14 +3,19 @@ export interface LoginRequest {
   password: string;
 }
 
+// API returns flat: { userId, username, nom, prenom, role, token } after camelCase conversion
 export interface LoginResponse {
+  userId: string;
+  username: string;
+  nom: string;
+  prenom: string;
+  role: UserRole;
   token: string;
-  user: User;
 }
 
 export interface User {
   id: string;
-  email: string;
+  username: string;
   nom: string;
   prenom: string;
   role: UserRole;

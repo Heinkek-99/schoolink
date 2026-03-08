@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { User } from '@/types/auth.types';
+import type { User, ROLE_PERMISSIONS as RolePermsType } from '@/types/auth.types';
 
 interface AuthState {
   user: User | null;
@@ -36,7 +36,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { user } = get();
     if (!user) return false;
     if (user.role === 'Admin') return true;
-    const { ROLE_PERMISSIONS } = require('@/types/auth.types');
+    // Inline permissions to avoid require()
+    const ROLE_PERMISSIONS: Record<string, string[]> = {
+      Admin: ['all'],
+      Directeur: ['read:all', 'export'],
+      Secretaire: ['crud:eleves', 'crud:familles', 'read:finances'],
+      Comptable: ['crud:paiements', 'read:eleves', 'read:familles'],
+    };
     const perms: string[] = ROLE_PERMISSIONS[user.role] || [];
     return perms.includes('all') || perms.includes(permission);
   },

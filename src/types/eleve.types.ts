@@ -1,48 +1,51 @@
+// Eleve list item (from GET /api/Eleves)
 export interface Eleve {
+  id: string;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  classe: string;
+  famille: string;
+  solde: number;
+  statut: string;
+}
+
+// Eleve dossier (from GET /api/Eleves/{id})
+export interface EleveDossier {
   id: string;
   matricule: string;
   nom: string;
   prenom: string;
   dateNaissance: string;
   lieuNaissance: string;
-  sexe: 'M' | 'F';
-  photo?: string;
-  classeId: string;
-  classe?: string;
-  familleId: string;
-  familleNom?: string;
-  anneeScolaire?: string;
-  statut: 'Actif' | 'Inactif' | 'Archivé';
-  totalDu?: number;
-  totalPaye?: number;
-  solde?: number;
-  frais?: EleveFrais[];
-  paiements?: ElevePaiement[];
+  sexe: string;
+  photoPath?: string;
+  classe: string;
+  famille: string;
+  frais: EleveFrais[];
+  totalDu: number;
+  totalPaye: number;
+  solde: number;
 }
 
 export interface EleveFrais {
   id: string;
-  typeFrais: string;
+  libelle: string;
   montant: number;
-  paye: number;
-  solde: number;
-  statut: string;
-  echeance?: string;
-}
-
-export interface ElevePaiement {
-  id: string;
-  date: string;
-  montant: number;
-  mode: string;
-  reference?: string;
+  montantPaye: number;
+  echeance: string;
+  isEchu: boolean;
+  periode?: string;
 }
 
 export interface Classe {
   id: string;
+  code: string;
   nom: string;
   niveau: string;
-  effectif?: number;
+  effectif: number;
+  capaciteMax: number;
+  estComplete: boolean;
 }
 
 export interface CreateEleveRequest {
@@ -50,8 +53,7 @@ export interface CreateEleveRequest {
   prenom: string;
   dateNaissance: string;
   lieuNaissance: string;
-  sexe: 'M' | 'F';
-  photo?: string;
+  sexe: string;
   classeId: string;
   familleId: string;
 }

@@ -1,28 +1,26 @@
 export interface DashboardStats {
   totalEleves: number;
   totalFamilles: number;
-  totalEncaissements: number;
-  totalImpayes: number;
+  totalFraisAttendus: number;
+  totalEncaisse: number;
+  soldeGlobal: number;
   tauxRecouvrement: number;
-  elevesActifs?: number;
-  nouveauxInscrits?: number;
+  statistiquesParClasse: StatistiqueClasse[];
+}
+
+export interface StatistiqueClasse {
+  nomClasse: string;
+  nombreEleves: number;
+  tauxRecouvrement: number;
 }
 
 export interface FamilleImpayee {
   id: string;
-  nom: string;
+  nomPere: string;
+  prenomPere: string;
   nombreEnfants: number;
-  montantDu: number;
-  statut: string;
-}
-
-export interface EncaissementMensuel {
-  mois: string;
-  montant: number;
-}
-
-export interface RepartitionStatut {
-  statut: string;
-  nombre: number;
-  pourcentage: number;
+  totalDu: number;
+  totalPaye: number;
+  soldeGlobal: number;
+  statutPaiement: string;
 }

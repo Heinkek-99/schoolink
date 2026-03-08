@@ -31,6 +31,8 @@ export function useCreateEleve() {
     mutationFn: (data: CreateEleveRequest) => elevesApi.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['eleves'] });
+      qc.invalidateQueries({ queryKey: ['familles'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Élève inscrit avec succès');
     },
     onError: () => toast.error("Erreur lors de l'inscription"),
