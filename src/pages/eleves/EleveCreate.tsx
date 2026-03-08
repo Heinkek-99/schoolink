@@ -71,8 +71,21 @@ export default function EleveCreate() {
   };
 
   const handleCreateFamille = (data: NewFamilleForm) => {
-    createFamilleMutation.mutate(data as any, {
+    // Clean empty strings to undefined for optional fields
+    const cleanData: Record<string, any> = {
+      nomPere: data.nomPere,
+      telephonePrincipal: data.telephonePrincipal,
+    };
+    if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.emailPere) cleanData.emailPere = data.emailPere;
+    if (data.nomMere) cleanData.nomMere = data.nomMere;
+    if (data.adresse) cleanData.adresse = data.adresse;
+    if (data.ville) cleanData.ville = data.ville;
+
+    console.log('[CreateFamille] Sending:', cleanData);
+    createFamilleMutation.mutate(cleanData as any, {
       onSuccess: (newFamille: any) => {
+        console.log('[CreateFamille] Response:', newFamille);
         // The API may return the id directly or as an object
         const familleId = typeof newFamille === 'string' ? newFamille : newFamille?.id;
         if (familleId) {
@@ -80,7 +93,12 @@ export default function EleveCreate() {
           setCreatedFamilleLabel(`${data.nomPere} ${data.prenomPere || ''} — ${data.telephonePrincipal}`);
           setShowNewFamille(false);
           formFamille.reset();
+        } else {
+          console.error('[CreateFamille] Could not extract familleId from:', newFamille);
         }
+      },
+      onError: (err: any) => {
+        console.error('[CreateFamille] Error:', err);
       },
     });
   };
@@ -90,16 +108,18 @@ export default function EleveCreate() {
     const step2Values = form2.getValues();
     // API expects Sexe as numeric enum: 0 = Masculin, 1 = Feminin
     const sexeValue = step1Data.sexe === 'M' ? 0 : 1;
+    const payload = {
+      nom: step1Data.nom,
+      prenom: step1Data.prenom,
+      dateNaissance: step1Data.dateNaissance,
+      lieuNaissance: step1Data.lieuNaissance,
+      sexe: sexeValue as any,
+      classeId: step2Values.classeId,
+      familleId: step2Values.familleId,
+    };
+    console.log('[CreateEleve] Sending:', payload);
     createMutation.mutate(
-      {
-        nom: step1Data.nom,
-        prenom: step1Data.prenom,
-        dateNaissance: step1Data.dateNaissance,
-        lieuNaissance: step1Data.lieuNaissance,
-        sexe: sexeValue as any,
-        classeId: step2Values.classeId,
-        familleId: step2Values.familleId,
-      },
+      payload,
       { onSuccess: () => {
         addNotification({ type: 'inscription', title: 'Nouvelle inscription', message: `${step1Data.prenom} ${step1Data.nom} inscrit(e) avec succès` });
         navigate('/eleves');
