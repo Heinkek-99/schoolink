@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, MoreVertical, Pencil, Trash2, Eye } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -87,16 +87,23 @@ function ActionMenu({ famille, onEdit, onDelete, canEdit, canDelete }: {
 
 export default function FamillesPage() {
   const navigate = useNavigate();
-  const { data: familles, isLoading } = useFamilles();
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { data: familles, isLoading } = useFamilles(debouncedSearch || undefined);
   const createMutation = useCreateFamille();
   const deleteMutation = useDeleteFamille();
   const { canCreate, canEdit, canDelete } = usePermissions();
   const addNotification = useNotificationStore((s) => s.addNotification);
-  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingFamille, setEditingFamille] = useState<Famille | null>(null);
   const [deletingFamille, setDeletingFamille] = useState<Famille | null>(null);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FamilleForm>({
     resolver: zodResolver(familleSchema),
@@ -108,11 +115,10 @@ export default function FamillesPage() {
 
   const handleSearch = useCallback((q: string) => setSearch(q), []);
 
-  const filtered = familles?.filter((f) => {
-    const matchSearch = !search || `${f.nomPere} ${f.prenomPere}`.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = !statusFilter || f.statutPaiement === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = useMemo(() => {
+    if (!statusFilter) return familles;
+    return familles?.filter((f) => f.statutPaiement === statusFilter);
+  }, [familles, statusFilter]);
 
   const onSubmit = (data: FamilleForm) => {
     createMutation.mutate(data as any, {

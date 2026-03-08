@@ -6,8 +6,8 @@ export const dashboardApi = {
     const response = await api.get('/api/Dashboard/stats');
     return response.data;
   },
-  getFamillesImpayes: async (): Promise<FamilleImpayee[]> => {
-    const response = await api.get('/api/Dashboard/familles-impayes');
+  getTopImpayes: async (): Promise<FamilleImpayee[]> => {
+    const response = await api.get('/api/Dashboard/top-impayes');
     return response.data;
   },
 };
