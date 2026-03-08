@@ -18,7 +18,8 @@ import type { Famille } from '@/types/famille.types';
 const familleSchema = z.object({
   nomPere: z.string().min(1, 'Nom du père requis'),
   prenomPere: z.string().default(''),
-  telephonePrincipal: z.string().min(1, 'Téléphone requis'),
+  telephonePrincipal: z.string().min(1, 'Téléphone principal requis'),
+  telephonePere: z.string().optional(),
   emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
   nomMere: z.string().optional(),
   prenomMere: z.string().optional(),
