@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, GraduationCap, Banknote,
-  BookOpen, Settings, ChevronLeft, ChevronRight, LogOut, Archive,
+  BookOpen, Settings, ChevronLeft, ChevronRight, LogOut,
 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { useLogout } from '@/hooks/useAuth';
@@ -14,7 +14,6 @@ const allNavItems = [
   { to: '/eleves', label: 'Élèves', icon: GraduationCap },
   { to: '/finances', label: 'Finances', icon: Banknote },
   { to: '/academique', label: 'Académique', icon: BookOpen },
-  { to: '/archives', label: 'Archives', icon: Archive },
   { to: '/parametres', label: 'Paramètres', icon: Settings },
 ];
 
@@ -25,7 +24,6 @@ export function Sidebar() {
   const { allowedNavItems, isAdmin } = usePermissions();
 
   const navItems = allNavItems.filter((item) => {
-    if (item.to === '/archives') return isAdmin;
     return allowedNavItems.includes(item.to);
   });
 

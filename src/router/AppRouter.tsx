@@ -12,7 +12,7 @@ import FinancesPage from '@/pages/finances/FinancesPage';
 import PaiementCreate from '@/pages/finances/PaiementCreate';
 import AcademiquePage from '@/pages/academique/AcademiquePage';
 import SettingsPage from '@/pages/settings/SettingsPage';
-import ArchivesPage from '@/pages/archives/ArchivesPage';
+
 import NotFound from '@/pages/NotFound';
 
 export function AppRouter() {
@@ -29,7 +29,7 @@ export function AppRouter() {
       <Route path="/finances" element={<ProtectedRoute><AppLayout><FinancesPage /></AppLayout></ProtectedRoute>} />
       <Route path="/finances/paiement" element={<ProtectedRoute requiredPermission="paiements"><AppLayout><PaiementCreate /></AppLayout></ProtectedRoute>} />
       <Route path="/academique" element={<ProtectedRoute><AppLayout><AcademiquePage /></AppLayout></ProtectedRoute>} />
-      <Route path="/archives" element={<ProtectedRoute><AppLayout><ArchivesPage /></AppLayout></ProtectedRoute>} />
+      
       <Route path="/parametres" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
 
       <Route path="*" element={<NotFound />} />
