@@ -1,7 +1,6 @@
 import jsPDF from 'jspdf';
 import { numberToWordsFr } from './numberToWords';
 
-// Helper to get etablissement info from localStorage
 function getEtablissement() {
   try {
     const saved = localStorage.getItem('etablissement');
@@ -20,7 +19,7 @@ function getEtablissement() {
 }
 
 // ==========================================
-// REÇU DE PAIEMENT — 3 per page (compact)
+// REÇU DE PAIEMENT — 1 reçu par page, modèle exact
 // ==========================================
 export function generateReceiptPDF(data: {
   numeroRecu?: string;
@@ -33,249 +32,211 @@ export function generateReceiptPDF(data: {
   reference?: string;
   objet?: string;
   observation?: string;
+  soldeDu?: number;
+  montantDuCompte?: number;
   ventilations: { eleveNom: string; montant: number }[];
 }) {
   const doc = new jsPDF();
   const etab = getEtablissement();
   const pw = doc.internal.pageSize.getWidth();
   const receiptNum = data.numeroRecu || String(Math.floor(Math.random() * 9999)).padStart(4, '0');
+  const amountStr = new Intl.NumberFormat('fr-FR').format(data.montant);
 
-  // Draw 3 identical receipts per page
-  const receiptHeight = 85;
-  const startYs = [8, 100, 192];
+  // Outer border
+  doc.setDrawColor(60, 40, 120);
+  doc.setLineWidth(0.8);
+  doc.rect(10, 10, pw - 20, 180);
 
-  for (const startY of startYs) {
-    // Outer border
-    doc.setDrawColor(30, 80, 150);
-    doc.setLineWidth(0.6);
-    doc.rect(12, startY, pw - 24, receiptHeight);
-    // Inner border
-    doc.setLineWidth(0.2);
-    doc.rect(14, startY + 2, pw - 28, receiptHeight - 4);
+  let y = 22;
 
-    const cx = pw / 2;
-    let y = startY + 12;
+  // ─── Header: REÇU ... Date ... N° ───
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bolditalic');
+  doc.setTextColor(60, 40, 120);
+  doc.text('REÇU', 18, y);
 
-    // Title
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 80, 150);
-    doc.text('Reçu de paiement', cx, y, { align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    y += 8;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(0, 0, 0);
+  doc.text('Date', 75, y);
+  // underline
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
+  doc.line(88, y + 1, 130, y + 1);
+  doc.setFont('helvetica', 'bold');
+  doc.text(data.date, 90, y);
 
-    // N° de reçu line
+  doc.setFont('helvetica', 'normal');
+  doc.text('N°.', 140, y);
+  doc.line(148, y + 1, pw - 15, y + 1);
+  doc.setFont('helvetica', 'bold');
+  doc.text(receiptNum, 150, y);
+
+  y += 14;
+
+  // ─── Reçu de : [Nom Famille]    Montant [box] ───
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Reçu de :', 18, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(data.familleNom, 42, y);
+  doc.line(42, y + 1, 120, y + 1);
+
+  // Montant box (right side)
+  doc.setFont('helvetica', 'bold');
+  doc.text('Montant', 135, y);
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(155, y - 6, 38, 9);
+  doc.setFontSize(11);
+  doc.text(`${amountStr} FCFA`, 157, y);
+
+  y += 10;
+
+  // ─── Montant en lettres ───
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(100, 100, 100);
+  doc.text('Montant', 18, y);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  const wordsStr = numberToWordsFr(data.montant) + ' francs CFA';
+  doc.text(wordsStr.charAt(0).toUpperCase() + wordsStr.slice(1), 38, y);
+  doc.setLineWidth(0.2);
+  doc.line(38, y + 1, pw - 15, y + 1);
+
+  y += 10;
+
+  // ─── Pour le paiement de [objet] ───
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Pour le paiement de', 18, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(data.objet || '...........................', 62, y);
+  doc.line(62, y + 1, pw - 15, y + 1);
+
+  y += 10;
+
+  // ─── Ventilation par élève ───
+  if (data.ventilations.length > 0) {
     doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`N° de reçu : `, 20, y);
-    doc.setFont('helvetica', 'bold');
-    doc.text(receiptNum, 42, y);
-    doc.text(data.date, pw - 20, y, { align: 'right' });
-    y += 7;
-
-    // "Je soussigné ... de l'établissement ..."
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    const line1 = `Je soussigné ${etab.directeur || '...........................'} , de l'établissement ${etab.nomEtablissement || '...........................'}`;
-    doc.text(line1, 20, y);
-    y += 6;
-
-    // "reconnais avoir reçu la somme de ... au titre de ..."
-    const amountStr = new Intl.NumberFormat('fr-FR').format(data.montant);
-    const line2 = `reconnais avoir reçu la somme de ${amountStr} FCFA (${numberToWordsFr(data.montant)} francs), au titre de ${data.objet || '...........................'}`;
-    const splitLine2 = doc.splitTextToSize(line2, pw - 44);
-    doc.text(splitLine2, 20, y);
-    y += splitLine2.length * 4.5;
-
-    // "payé par (moyen de paiement : ...) de Monsieur / Madame ..."
-    const line3 = `payé par (moyen de paiement : ${data.mode || 'CB, chèque, virement ou espèces'}) de Monsieur / Madame ${data.familleNom}`;
-    const splitLine3 = doc.splitTextToSize(line3, pw - 44);
-    doc.text(splitLine3, 20, y);
-    y += splitLine3.length * 4.5;
-
-    // Eleve + Classe
-    doc.text(`Élève : ${data.eleveNom}    —    Classe : ${data.eleveClasse}`, 20, y);
-    y += 6;
-
-    if (data.observation) {
-      doc.setFont('helvetica', 'italic');
-      doc.text(`Obs: ${data.observation}`, 20, y);
-      y += 5;
-    }
-
-    // "Fait pour servir et valoir ce que de droit."
-    y = startY + receiptHeight - 18;
-    doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
-    doc.text('Fait pour servir et valoir ce que de droit.', cx, y, { align: 'center' });
-
-    // Signature line
-    y += 7;
-    doc.setFontSize(7);
+    doc.setTextColor(80, 80, 80);
+    doc.text('Détail par élève :', 22, y);
+    doc.setTextColor(0, 0, 0);
+    y += 5;
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text(`${etab.ville || '...............'}, le ${data.date}`, cx, y, { align: 'center' });
+    data.ventilations.forEach((v) => {
+      doc.text(`• ${v.eleveNom}`, 26, y);
+      doc.text(`${new Intl.NumberFormat('fr-FR').format(v.montant)} FCFA`, 110, y);
+      y += 5;
+    });
+    y += 2;
   }
 
-  // Dashed cut lines between receipts
-  doc.setDrawColor(180, 180, 180);
-  doc.setLineDashPattern([3, 3], 0);
+  // ─── de [date] à [date]        Payé par [ ] Espèces ... ───
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('de', 22, y);
+  doc.line(30, y + 1, 55, y + 1);
+  doc.text('à', 58, y);
+  doc.line(63, y + 1, 88, y + 1);
+
+  // Payment mode checkboxes (right side)
+  const modes = [
+    { label: 'Espèces', key: 'Espèces' },
+    { label: 'Chèque No.', key: 'Chèque' },
+    { label: 'Virement', key: 'Virement' },
+    { label: 'Mobile Money', key: 'Mobile Money' },
+  ];
+  let modeY = y - 2;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text('Payé par', 108, modeY + 2);
+  modeY += 2;
+  modes.forEach((m) => {
+    doc.text('[', 128, modeY);
+    if (data.mode === m.key) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('X', 130.5, modeY);
+      doc.setFont('helvetica', 'normal');
+    }
+    doc.text(`] ${m.label}`, 132, modeY);
+    if (m.key === 'Chèque' && data.reference) {
+      doc.text(data.reference, 156, modeY);
+      doc.line(156, modeY + 1, pw - 15, modeY + 1);
+    }
+    modeY += 5;
+  });
+
+  y = Math.max(y + 8, modeY + 2);
+
+  // ─── Reçu par x ───
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Reçu par', 18, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text('x', 38, y);
+  doc.line(38, y + 1, 90, y + 1);
+  y += 6;
+
+  // Nom, Adresse, Tel of establishment (left)
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  doc.text('Nom', 22, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(etab.directeur || etab.nomEtablissement || '', 34, y);
+  y += 5;
+  doc.setFont('helvetica', 'italic');
+  doc.text('Addresse', 22, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text([etab.adresse, etab.ville].filter(Boolean).join(', ') || '', 40, y);
+  y += 5;
+  doc.setFont('helvetica', 'italic');
+  doc.text('Tel', 22, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(etab.telephone || '', 30, y);
+
+  // ─── Right side box: Montant du compte / Ce paiement / Solde dû ───
+  const boxX = 110;
+  const boxY = y - 12;
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
-  doc.line(5, 96, pw - 5, 96);
-  doc.line(5, 188, pw - 5, 188);
-  doc.setLineDashPattern([], 0);
+
+  // Table with 3 rows
+  const rowH = 7;
+  doc.rect(boxX, boxY, 82, rowH * 3);
+  doc.line(boxX, boxY + rowH, boxX + 82, boxY + rowH);
+  doc.line(boxX, boxY + rowH * 2, boxX + 82, boxY + rowH * 2);
+  doc.line(boxX + 42, boxY, boxX + 42, boxY + rowH * 3);
+
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Montant du compte', boxX + 3, boxY + 5);
+  doc.text('Ce paiement', boxX + 3, boxY + rowH + 5);
+  doc.text('Solde dû', boxX + 3, boxY + rowH * 2 + 5);
+
+  doc.setFont('helvetica', 'bold');
+  const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
+  doc.text(data.montantDuCompte !== undefined ? fmt(data.montantDuCompte) : '-', boxX + 44, boxY + 5);
+  doc.text(fmt(data.montant), boxX + 44, boxY + rowH + 5);
+  doc.text(data.soldeDu !== undefined ? fmt(data.soldeDu) : '-', boxX + 44, boxY + rowH * 2 + 5);
+
+  if (data.observation) {
+    y += 8;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`Obs: ${data.observation}`, 18, y);
+  }
 
   doc.save(`recu-${data.familleNom}-${data.date}.pdf`);
 }
 
 // ==========================================
-// CARTE D'IDENTITÉ SCOLAIRE — exact template
+// CARTE D'IDENTITÉ SCOLAIRE — format carte crédit
 // ==========================================
-function drawStudentCard(doc: jsPDF, data: {
-  nom: string;
-  prenom: string;
-  matricule: string;
-  classe: string;
-  anneeScolaire: string;
-  dateNaissance?: string;
-  lieuNaissance?: string;
-  sexe?: string;
-  photoUrl?: string;
-}, offsetX: number, offsetY: number) {
-  const etab = getEtablissement();
-  // Card dimensions in mm (credit card ~85.6 x 54, but we use a slightly bigger layout for A4 printing)
-  const cw = 90;
-  const ch = 58;
-
-  // White background + border
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(180, 180, 180);
-  doc.setLineWidth(0.3);
-  doc.rect(offsetX, offsetY, cw, ch, 'FD');
-
-  // Top left: Cameroon flag colors (vertical stripes at left edge)
-  // Green band top-left
-  doc.setFillColor(0, 128, 0);
-  doc.rect(offsetX, offsetY, 3, ch / 3, 'F');
-  // Red band
-  doc.setFillColor(206, 17, 38);
-  doc.rect(offsetX, offsetY + ch / 3, 3, ch / 3, 'F');
-  // Yellow band
-  doc.setFillColor(252, 209, 22);
-  doc.rect(offsetX, offsetY + (2 * ch / 3), 3, ch / 3, 'F');
-
-  const x = offsetX + 5;
-  let y = offsetY + 6;
-
-  // "REPUBLIC OF CAMEROON" header
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 0, 0);
-  doc.text('REPUBLIC OF CAMEROON', offsetX + cw / 2, y, { align: 'center' });
-  y += 3.5;
-  doc.setFontSize(5);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(206, 17, 38);
-  doc.text('RÉPUBLIQUE DU CAMEROUN', offsetX + cw / 2, y, { align: 'center' });
-  y += 4;
-
-  // "MINISTRY OF SECONDARY EDUCATION"
-  doc.setFontSize(5.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 0, 0);
-  doc.text('MINISTRY OF SECONDARY EDUCATION', offsetX + cw / 2, y, { align: 'center' });
-  y += 3;
-  doc.setFontSize(4.5);
-  doc.setFont('helvetica', 'normal');
-  doc.text('MINISTRE DES ENSEIGNEMENTS SECONDAIRES', offsetX + cw / 2, y, { align: 'center' });
-  y += 5;
-
-  // School name (right-aligned area, bold green)
-  doc.setFontSize(6);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 100, 0);
-  const schoolName = (etab.nomEtablissement || 'SCHOOLFLOW').toUpperCase();
-  doc.text(schoolName, offsetX + cw - 8, y, { align: 'right' });
-  y += 3;
-
-  // Devise
-  doc.setFontSize(4);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(0, 100, 0);
-  doc.text(etab.devise || '', offsetX + cw - 8, y, { align: 'right' });
-  doc.setTextColor(0, 0, 0);
-  y += 4;
-
-  // Left side: student fields
-  const labelX = x + 2;
-  const valueX = x + 22;
-  const lineH = 5;
-
-  const fields = [
-    { label: 'Nom / Name', value: data.nom.toUpperCase() },
-    { label: 'Prenom /\nSurname', value: data.prenom },
-    { label: 'Né(e) le /\nborn on', value: data.dateNaissance || '-' },
-    { label: 'A / At', value: data.lieuNaissance || '-' },
-    { label: 'Classe / Class', value: data.classe },
-    { label: 'Matricule', value: data.matricule },
-    { label: 'Validité', value: data.anneeScolaire },
-  ];
-
-  fields.forEach((f, i) => {
-    const fy = y + i * lineH;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(4);
-    doc.text(f.label, labelX, fy);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(5.5);
-    doc.text(f.value, valueX, fy);
-  });
-
-  // Right side: photo placeholder
-  const photoX = offsetX + cw - 26;
-  const photoY = y + 2;
-  const photoW = 18;
-  const photoH = 22;
-
-  doc.setDrawColor(150, 150, 150);
-  doc.setLineWidth(0.3);
-  doc.rect(photoX, photoY, photoW, photoH);
-  doc.setFontSize(5);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(180, 180, 180);
-  doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-
-  // Cachet + contact info under photo
-  doc.setFontSize(3);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(150, 150, 150);
-  doc.text('[Cachet]', photoX + photoW / 2, photoY + photoH + 4, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-
-  if (etab.telephone || etab.ville) {
-    doc.setFontSize(3.5);
-    doc.setFont('helvetica', 'normal');
-    if (etab.ville) doc.text(`BP: ${etab.adresse || ''} ${etab.ville}`, photoX + photoW / 2, photoY + photoH + 8, { align: 'center' });
-    if (etab.telephone) doc.text(`Tel: ${etab.telephone}`, photoX + photoW / 2, photoY + photoH + 11, { align: 'center' });
-  }
-
-  // Vertical text left edge: "CARTE IDENTITE SCOLAIRE" + "SCHOOL IDENTITY CARD"
-  doc.setFontSize(3.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(206, 17, 38);
-  doc.text('CARTE IDENTITE SCOLAIRE', offsetX + 5, offsetY + ch - 2, { angle: 90 });
-  doc.setTextColor(0, 100, 0);
-  doc.text('SCHOOL IDENTITY CARD', offsetX + 3, offsetY + ch - 2, { angle: 90 });
-  doc.setTextColor(0, 0, 0);
-
-  // Bottom NB line
-  doc.setFontSize(3.5);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(206, 17, 38);
-  doc.text('NB : Cette carte est strictement personnelle et devra être présentée à toute réquisition', offsetX + cw / 2, offsetY + ch - 2, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-}
-
 export function generateStudentCardPDF(data: {
   nom: string;
   prenom: string;
@@ -287,14 +248,128 @@ export function generateStudentCardPDF(data: {
   sexe?: string;
   photoUrl?: string;
 }) {
-  // Single card on A4 page
-  const doc = new jsPDF({ format: 'a4', unit: 'mm', orientation: 'portrait' });
-  drawStudentCard(doc, data, 10, 10);
+  // Credit card size: 85.6mm x 54mm
+  const doc = new jsPDF({ format: [85.6, 54], unit: 'mm', orientation: 'landscape' });
+  const etab = getEtablissement();
+  const w = 85.6;
+  const h = 54;
+
+  // White background + border
+  doc.setDrawColor(0, 100, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(1, 1, w - 2, h - 2);
+  doc.setLineWidth(0.2);
+  doc.rect(2, 2, w - 4, h - 4);
+
+  // Top band - green
+  doc.setFillColor(0, 128, 0);
+  doc.rect(2, 2, w - 4, 8, 'F');
+
+  // Red stripe
+  doc.setFillColor(206, 17, 38);
+  doc.rect(2, 10, w - 4, 1.5, 'F');
+
+  // Yellow stripe
+  doc.setFillColor(252, 209, 22);
+  doc.rect(2, 11.5, w - 4, 1.5, 'F');
+
+  // School name in green band
+  doc.setFontSize(6);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('REPUBLIC OF CAMEROON', w / 2, 5.5, { align: 'center' });
+  doc.setFontSize(4.5);
+  doc.setFont('helvetica', 'italic');
+  doc.text('RÉPUBLIQUE DU CAMEROUN', w / 2, 8, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // School name
+  doc.setFontSize(6);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 100, 0);
+  const schoolName = (etab.nomEtablissement || 'SCHOOLFLOW').toUpperCase();
+  doc.text(schoolName, w / 2, 16.5, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // "CARTE IDENTITE SCOLAIRE" vertical on left
+  doc.setFontSize(3.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(206, 17, 38);
+  doc.text('CARTE IDENTITÉ SCOLAIRE', 4.5, 48, { angle: 90 });
+  doc.setTextColor(0, 0, 0);
+
+  // Student info - left side
+  const startY = 20;
+  const labelX = 8;
+  const valueX = 28;
+  const lineH = 4.5;
+
+  doc.setFontSize(4.5);
+  doc.setFont('helvetica', 'normal');
+
+  const fields = [
+    { label: 'Nom / Name', value: data.nom.toUpperCase() },
+    { label: 'Prénom / Surname', value: data.prenom },
+    { label: 'Né(e) le / Born on', value: data.dateNaissance || '-' },
+    { label: 'A / At', value: data.lieuNaissance || '-' },
+    { label: 'Classe / Class', value: data.classe },
+    { label: 'Matricule', value: data.matricule },
+    { label: 'Validité', value: data.anneeScolaire },
+  ];
+
+  fields.forEach((f, i) => {
+    const y = startY + i * lineH;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(4);
+    doc.text(f.label, labelX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(5);
+    doc.text(f.value, valueX, y);
+  });
+
+  // Photo placeholder - right side
+  const photoX = w - 25;
+  const photoY = 20;
+  const photoW = 18;
+  const photoH = 22;
+
+  doc.setDrawColor(150, 150, 150);
+  doc.setLineWidth(0.3);
+  doc.rect(photoX, photoY, photoW, photoH);
+
+  doc.setFontSize(4);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(150, 150, 150);
+  doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // Stamp area
+  doc.setFontSize(3);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(150, 150, 150);
+  doc.text('[Cachet]', photoX + photoW / 2, photoY + photoH + 4, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // Bottom note
+  doc.setFontSize(3);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(206, 17, 38);
+  doc.text('NB : Cette carte est strictement personnelle et devra être présentée à toute réquisition', w / 2, h - 3, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // Contact info bottom right
+  if (etab.telephone || etab.ville) {
+    doc.setFontSize(3);
+    doc.setFont('helvetica', 'normal');
+    const contact = [etab.ville, etab.telephone ? `Tél: ${etab.telephone}` : ''].filter(Boolean).join(' - ');
+    doc.text(contact, w - 4, h - 6, { align: 'right' });
+  }
+
   doc.save(`carte-${data.matricule}.pdf`);
 }
 
 // ==========================================
-// BATCH PRINT ALL STUDENT CARDS (multiple per page)
+// BATCH PRINT ALL STUDENT CARDS (multiple per page on A4)
 // ==========================================
 export function generateAllStudentCardsPDF(students: {
   nom: string;
@@ -305,34 +380,109 @@ export function generateAllStudentCardsPDF(students: {
   dateNaissance?: string;
   lieuNaissance?: string;
   sexe?: string;
-  photoUrl?: string;
 }[]) {
+  // A4 page, place cards in a grid
   const doc = new jsPDF({ format: 'a4', unit: 'mm', orientation: 'portrait' });
-  const cardW = 92;
-  const cardH = 60;
-  const marginX = 10;
+  const cardW = 85.6;
+  const cardH = 54;
+  const marginX = 12;
   const marginY = 10;
-  const gapX = 4;
-  const gapY = 4;
+  const gapX = 6;
+  const gapY = 5;
   const cols = 2;
-  const rows = 4; // 8 cards per page
+  const rows = 4;
+  const etab = getEtablissement();
 
   students.forEach((student, i) => {
-    const pageIndex = Math.floor(i / (cols * rows));
     const posOnPage = i % (cols * rows);
+    if (i > 0 && posOnPage === 0) doc.addPage();
+
     const col = posOnPage % cols;
     const row = Math.floor(posOnPage / cols);
-
-    if (i > 0 && posOnPage === 0) {
-      doc.addPage();
-    }
-
     const x = marginX + col * (cardW + gapX);
     const y = marginY + row * (cardH + gapY);
-    drawStudentCard(doc, student, x, y);
+
+    // Draw mini card at position
+    drawMiniCard(doc, student, etab, x, y, cardW, cardH);
   });
 
   doc.save(`cartes-eleves-batch.pdf`);
+}
+
+function drawMiniCard(
+  doc: jsPDF,
+  data: { nom: string; prenom: string; matricule: string; classe: string; anneeScolaire: string; dateNaissance?: string; lieuNaissance?: string },
+  etab: any,
+  ox: number,
+  oy: number,
+  cw: number,
+  ch: number,
+) {
+  // Border
+  doc.setDrawColor(0, 100, 0);
+  doc.setLineWidth(0.4);
+  doc.rect(ox, oy, cw, ch);
+
+  // Green band
+  doc.setFillColor(0, 128, 0);
+  doc.rect(ox, oy, cw, 7, 'F');
+  doc.setFillColor(206, 17, 38);
+  doc.rect(ox, oy + 7, cw, 1.2, 'F');
+  doc.setFillColor(252, 209, 22);
+  doc.rect(ox, oy + 8.2, cw, 1.2, 'F');
+
+  doc.setFontSize(5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('REPUBLIC OF CAMEROON', ox + cw / 2, oy + 4.5, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  doc.setFontSize(5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 100, 0);
+  doc.text((etab.nomEtablissement || 'SCHOOLFLOW').toUpperCase(), ox + cw / 2, oy + 13, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // Fields
+  const fields = [
+    { label: 'Nom', value: data.nom.toUpperCase() },
+    { label: 'Prénom', value: data.prenom },
+    { label: 'Né(e) le', value: data.dateNaissance || '-' },
+    { label: 'Lieu', value: data.lieuNaissance || '-' },
+    { label: 'Classe', value: data.classe },
+    { label: 'Matricule', value: data.matricule },
+    { label: 'Validité', value: data.anneeScolaire },
+  ];
+
+  let fy = oy + 18;
+  fields.forEach((f) => {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(3.5);
+    doc.text(f.label, ox + 5, fy);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(4.5);
+    doc.text(f.value, ox + 22, fy);
+    fy += 3.8;
+  });
+
+  // Photo box
+  const pX = ox + cw - 22;
+  const pY = oy + 17;
+  doc.setDrawColor(150, 150, 150);
+  doc.setLineWidth(0.2);
+  doc.rect(pX, pY, 16, 20);
+  doc.setFontSize(3.5);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(180, 180, 180);
+  doc.text('PHOTO', pX + 8, pY + 10, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // NB
+  doc.setFontSize(2.8);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(206, 17, 38);
+  doc.text('NB : Cette carte est strictement personnelle', ox + cw / 2, oy + ch - 2, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
 }
 
 // ==========================================
@@ -526,8 +676,8 @@ export function generateCertificatScolaritePDF(data: {
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  const addr = [etab.adresse, etab.ville].filter(Boolean).join(', ');
-  if (addr) doc.text(addr, pw / 2, 50, { align: 'center' });
+  const addrC = [etab.adresse, etab.ville].filter(Boolean).join(', ');
+  if (addrC) doc.text(addrC, pw / 2, 50, { align: 'center' });
   const contactLine = [etab.telephone ? `Tél: ${etab.telephone}` : '', etab.email || ''].filter(Boolean).join(' — ');
   if (contactLine) doc.text(contactLine, pw / 2, 55, { align: 'center' });
 

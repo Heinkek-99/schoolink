@@ -304,16 +304,18 @@ export default function EleveDetail() {
                        <td className="p-4 text-right">
                          {f.montantPaye > 0 && (
                            <button
-                             onClick={() => generateReceiptPDF({
-                               familleNom: eleve.famille || '-',
-                               eleveNom: `${eleve.prenom} ${eleve.nom}`,
-                               eleveClasse: eleve.classe || '-',
-                               date: new Date().toLocaleDateString('fr-FR'),
-                               montant: f.montantPaye,
-                               mode: '-',
-                               objet: f.libelle,
-                               ventilations: [{ eleveNom: `${eleve.prenom} ${eleve.nom}`, montant: f.montantPaye }],
-                             })}
+                              onClick={() => generateReceiptPDF({
+                                familleNom: eleve.famille || '-',
+                                eleveNom: `${eleve.prenom} ${eleve.nom}`,
+                                eleveClasse: eleve.classe || '-',
+                                date: new Date().toLocaleDateString('fr-FR'),
+                                montant: f.montantPaye,
+                                mode: '-',
+                                objet: f.libelle,
+                                montantDuCompte: eleve.totalDu,
+                                soldeDu: eleve.solde,
+                                ventilations: [{ eleveNom: `${eleve.prenom} ${eleve.nom}`, montant: f.montantPaye }],
+                              })}
                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                              title="Imprimer le reçu"
                            >
