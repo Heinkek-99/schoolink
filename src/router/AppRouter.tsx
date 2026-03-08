@@ -12,7 +12,7 @@ import FinancesPage from '@/pages/finances/FinancesPage';
 import PaiementCreate from '@/pages/finances/PaiementCreate';
 import AcademiquePage from '@/pages/academique/AcademiquePage';
 import SettingsPage from '@/pages/settings/SettingsPage';
-import ArchivesPage from '@/pages/archives/ArchivesPage';
+
 import NotFound from '@/pages/NotFound';
 
 export function AppRouter() {
