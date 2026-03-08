@@ -46,6 +46,8 @@ export default function EleveCreate() {
   const { data: familles, isLoading: famillesLoading } = useFamilles();
   const createMutation = useCreateEleve();
   const createFamilleMutation = useCreateFamille();
+  const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
+  const addNotification = useNotificationStore((s) => s.addNotification);
 
   const form1 = useForm<Step1>({ resolver: zodResolver(step1Schema), defaultValues: step1Data || undefined });
   const form2 = useForm<Step2>({ resolver: zodResolver(step2Schema) });
