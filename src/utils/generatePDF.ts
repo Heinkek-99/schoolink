@@ -48,7 +48,7 @@ export function generateReceiptPDF(data: {
   const pw = 148;
   const ph = 105;
   const receiptNum = data.numeroRecu || String(Math.floor(Math.random() * 9999)).padStart(4, '0');
-  const amountStr = new Intl.NumberFormat('fr-FR').format(data.montant);
+  const amountStr = fmtNum(data.montant);
 
   // Get current user info
   let userName = '';
