@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Phone, Mail, MapPin, Save, Archive, Pencil, Banknote, Percent } from 'lucide-react';
-import { useFamille, useUpdateFamille, useArchiveFamille } from '@/hooks/useFamilles';
+import { ArrowLeft, Phone, Mail, MapPin, Save, Trash2, Pencil, Banknote, Percent } from 'lucide-react';
+import { useFamille, useUpdateFamille, useDeleteFamille } from '@/hooks/useFamilles';
 import { usePaiementsByFamille } from '@/hooks/usePaiements';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
@@ -34,11 +34,11 @@ export default function FamilleDetail() {
   const { data: famille, isLoading } = useFamille(id!);
   const { data: paiements } = usePaiementsByFamille(id!);
   const updateMutation = useUpdateFamille();
-  const archiveMutation = useArchiveFamille();
+  const deleteMutation = useDeleteFamille();
   const { canEdit, canDelete, isAdmin } = usePermissions();
   const [activeTab, setActiveTab] = useState<'enfants' | 'paiements' | 'informations'>('enfants');
   const [isEditing, setIsEditing] = useState(false);
-  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const editForm = useForm<EditFamilleForm>({
     resolver: zodResolver(editFamilleSchema),
@@ -68,8 +68,8 @@ export default function FamilleDetail() {
     );
   };
 
-  const handleArchive = () => {
-    archiveMutation.mutate(id!, {
+  const handleDelete = () => {
+    deleteMutation.mutate(id!, {
       onSuccess: () => navigate('/familles'),
     });
   };
@@ -117,38 +117,38 @@ export default function FamilleDetail() {
                 <Pencil size={16} /> Modifier
               </button>
             )}
-            {isAdmin && (
+            {canDelete('familles') && (
               <button
-                onClick={() => setShowArchiveConfirm(true)}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
               >
-                <Archive size={16} /> Archiver
+                <Trash2 size={16} /> Supprimer
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Archive confirmation modal */}
-      {showArchiveConfirm && (
-        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowArchiveConfirm(false)}>
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDeleteConfirm(false)}>
           <div className="bg-card rounded-xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-destructive mb-2">Archiver cette famille ?</h3>
+            <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cette famille ?</h3>
             <p className="text-sm text-muted-foreground mb-4">
               La famille <strong>{famille.nomPere} {famille.prenomPere}</strong>
-              {famille.enfants?.length > 0 && ` et ses ${famille.enfants.length} enfant(s) associé(s)`} seront archivés.
-              Vous pourrez la restaurer depuis les archives.
+              {famille.enfants?.length > 0 && ` et ses ${famille.enfants.length} enfant(s) associé(s)`} sera définitivement supprimée.
+              Cette action est irréversible.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setShowArchiveConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
                 Annuler
               </button>
               <button
-                onClick={handleArchive}
-                disabled={archiveMutation.isPending}
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
                 className="flex-1 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
               >
-                {archiveMutation.isPending ? 'Archivage...' : 'Confirmer'}
+                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
               </button>
             </div>
           </div>
