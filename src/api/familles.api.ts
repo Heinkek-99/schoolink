@@ -22,13 +22,10 @@ export const famillesApi = {
     await api.delete(`/api/Familles/${id}`);
   },
   getArchived: async (): Promise<Famille[]> => {
-    try {
-      const response = await api.get('/api/Familles', { params: { statut: 'Archivé' } });
-      return response.data;
-    } catch {
-      // Endpoint may not support filtering - return empty
-      return [];
-    }
+    // No dedicated endpoint — fetch all and filter archived
+    const response = await api.get('/api/Familles');
+    const all: Famille[] = response.data;
+    return all.filter((f) => f.statutPaiement === 'Archivé');
   },
   restore: async (id: string): Promise<void> => {
     await api.put(`/api/Familles/${id}/restore`);
