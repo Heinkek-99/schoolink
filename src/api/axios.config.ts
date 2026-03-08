@@ -74,6 +74,29 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+    // Extract meaningful error message from API response
+    const responseData = error.response?.data;
+    if (responseData) {
+      let errorMsg = '';
+      if (typeof responseData === 'string') {
+        errorMsg = responseData;
+      } else if (responseData.Error) {
+        errorMsg = responseData.Error;
+      } else if (responseData.Errors?.length) {
+        errorMsg = responseData.Errors.join(', ');
+      } else if (responseData.errors) {
+        // .NET validation errors format
+        const validationErrors = Object.values(responseData.errors).flat();
+        errorMsg = validationErrors.join(', ');
+      } else if (responseData.title) {
+        errorMsg = responseData.title;
+      }
+      if (errorMsg) {
+        console.error('[API Error]', error.response?.status, errorMsg);
+        return Promise.reject(new Error(errorMsg));
+      }
+    }
+    console.error('[API Error]', error.response?.status, error.response?.data);
     return Promise.reject(error);
   }
 );
