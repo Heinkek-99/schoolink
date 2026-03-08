@@ -344,8 +344,8 @@ export default function EleveDetail() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             { label: "Carte d'élève", icon: CreditCard, action: () => generateStudentCardPDF({ nom: eleve.nom, prenom: eleve.prenom, matricule: eleve.matricule, classe: eleve.classe || '', anneeScolaire, dateNaissance: eleve.dateNaissance?.split('T')[0], lieuNaissance: eleve.lieuNaissance, sexe: eleve.sexe, photoUrl: photoUrl || undefined }) },
-            { label: "Certificat de scolarité", icon: FileText, action: () => {} },
-            { label: "Bulletin financier", icon: BarChart3, action: () => {} },
+            { label: "Certificat de scolarité", icon: FileText, action: () => generateCertificatScolaritePDF({ nom: eleve.nom, prenom: eleve.prenom, matricule: eleve.matricule, classe: eleve.classe || '', anneeScolaire, dateNaissance: eleve.dateNaissance?.split('T')[0], lieuNaissance: eleve.lieuNaissance, sexe: eleve.sexe }) },
+            { label: "Bulletin financier", icon: BarChart3, action: () => generateBulletinFinancierPDF({ nom: eleve.nom, prenom: eleve.prenom, matricule: eleve.matricule, classe: eleve.classe || '', anneeScolaire, famille: eleve.famille || '-', totalDu: eleve.totalDu, totalPaye: eleve.totalPaye, solde: eleve.solde, frais: eleve.frais || [] }) },
             { label: "Bulletin de notes", icon: ClipboardList, action: () => {} },
           ].map((doc) => (
             <button
