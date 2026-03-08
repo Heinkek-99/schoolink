@@ -92,7 +92,6 @@ export default function PaiementCreate() {
   };
 
   const handleConfirm = () => {
-    const values = getValues();
     const ventilationsList = Object.entries(ventilations)
       .filter(([, v]) => v > 0)
       .map(([eleveId, montant]) => ({
@@ -101,16 +100,15 @@ export default function PaiementCreate() {
         montant,
       }));
 
-    // Convert date to full ISO format for backend
-    const isoDate = new Date(values.date + 'T00:00:00').toISOString();
+    const isoDate = new Date(formValues.date + 'T00:00:00').toISOString();
 
     createMutation.mutate(
       {
         familleId: selectedFamilleId!,
         date: isoDate,
-        montant: Number(values.montant) || 0,
-        mode: values.mode,
-        reference: values.reference,
+        montant: formValues.montant,
+        mode: formValues.mode,
+        reference: formValues.reference,
         ventilations: ventilationsList,
       },
       {
@@ -118,14 +116,14 @@ export default function PaiementCreate() {
           addNotification({
             type: 'paiement',
             title: 'Paiement enregistré',
-            message: `${formatCurrency(values.montant)} reçu de ${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
+            message: `${formatCurrency(formValues.montant)} reçu de ${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
           });
           generateReceiptPDF({
             familleNom: `${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
-            date: values.date,
-            montant: values.montant,
-            mode: values.mode,
-            reference: values.reference,
+            date: formValues.date,
+            montant: formValues.montant,
+            mode: formValues.mode,
+            reference: formValues.reference,
             ventilations: ventilationsList,
           });
           navigate('/finances');
