@@ -18,20 +18,21 @@ export interface Ventilation {
   remarque?: string;
 }
 
-// Maps to backend enum: Cash=0, MobileMoney=1, Virement=2, Cheque=3
+// Maps to backend enum: Especes=1, Cheque=2, Virement=3, MobileMoney=4, CarteCredit=5
 export const MODE_PAIEMENT_MAP: Record<string, number> = {
-  'Cash': 0,
-  'Mobile Money': 1,
-  'Virement': 2,
-  'Chèque': 3,
+  'Espèces': 1,
+  'Chèque': 2,
+  'Virement': 3,
+  'Mobile Money': 4,
+  'Carte de crédit': 5,
 };
 
-// Reverse map: number/string → display name
 export const MODE_PAIEMENT_LABEL: Record<number, string> = {
-  0: 'Cash',
-  1: 'Mobile Money',
-  2: 'Virement',
-  3: 'Chèque',
+  1: 'Espèces',
+  2: 'Chèque',
+  3: 'Virement',
+  4: 'Mobile Money',
+  5: 'Carte de crédit',
 };
 
 export function getModePaiementLabel(mode: number | string): string {

@@ -13,6 +13,6 @@ export function getRecoveryRate(due: number, paid: number): string {
   return Math.round((paid / due) * 100) + '%';
 }
 
-export const PAYMENT_MODES = ['Cash', 'Mobile Money', 'Virement', 'Chèque'] as const;
+export const PAYMENT_MODES = ['Espèces', 'Chèque', 'Virement', 'Mobile Money', 'Carte de crédit'] as const;
 
 export const ANNEE_SCOLAIRE = '2024-2025';
