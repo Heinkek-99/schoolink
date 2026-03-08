@@ -579,7 +579,7 @@ export function generateBulletinFinancierPDF(data: {
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n);
+  const fmt = (n: number) => fmtNum(n);
 
   data.frais.forEach((f) => {
     const solde = f.montant - f.montantPaye;
