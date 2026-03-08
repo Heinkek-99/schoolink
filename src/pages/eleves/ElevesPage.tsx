@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
@@ -9,6 +9,8 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { useEleves, useClasses, useDeleteEleve } from '@/hooks/useEleves';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { generateAllStudentCardsPDF } from '@/utils/generatePDF';
+import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
 import type { Eleve } from '@/types/eleve.types';
 
 function ActionMenu({ eleve, canEdit, canDelete }: {
@@ -98,6 +100,7 @@ export default function ElevesPage() {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [search, setSearch] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
+  const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
   const handleSearch = useCallback((q: string) => setSearch(q), []);
 
@@ -110,14 +113,30 @@ export default function ElevesPage() {
   return (
     <div>
       <PageHeader title="Élèves" subtitle={`${eleves?.length ?? 0} élèves inscrits`}>
-        {canCreate('eleves') && (
-          <button
-            onClick={() => navigate('/eleves/nouveau')}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            <Plus size={18} /> Nouvelle inscription
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {filtered && filtered.length > 0 && (
+            <button
+              onClick={() => generateAllStudentCardsPDF(filtered.map((e) => ({
+                nom: e.nom,
+                prenom: e.prenom,
+                matricule: e.matricule,
+                classe: e.classe || '',
+                anneeScolaire,
+              })))}
+              className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+            >
+              <Printer size={18} /> Imprimer les cartes
+            </button>
+          )}
+          {canCreate('eleves') && (
+            <button
+              onClick={() => navigate('/eleves/nouveau')}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              <Plus size={18} /> Nouvelle inscription
+            </button>
+          )}
+        </div>
       </PageHeader>
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
