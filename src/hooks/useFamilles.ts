@@ -18,6 +18,13 @@ export function useFamille(id: string) {
   });
 }
 
+export function useArchivedFamilles() {
+  return useQuery({
+    queryKey: ['familles', 'archived'],
+    queryFn: famillesApi.getArchived,
+  });
+}
+
 export function useCreateFamille() {
   const qc = useQueryClient();
   return useMutation({
@@ -43,15 +50,29 @@ export function useUpdateFamille() {
   });
 }
 
-export function useDeleteFamille() {
+export function useArchiveFamille() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => famillesApi.delete(id),
+    mutationFn: (id: string) => famillesApi.archive(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['familles'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
-      toast.success('Famille supprimée');
+      toast.success('Famille archivée');
     },
-    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la suppression'),
+    onError: (err: any) => toast.error(err?.message || "Erreur lors de l'archivage"),
+  });
+}
+
+export function useRestoreFamille() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => famillesApi.restore(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['familles'] });
+      qc.invalidateQueries({ queryKey: ['familles', 'archived'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Famille restaurée');
+    },
+    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la restauration'),
   });
 }

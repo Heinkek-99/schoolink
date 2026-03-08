@@ -18,7 +18,14 @@ export const famillesApi = {
     const response = await api.put(`/api/Familles/${data.id}`, data);
     return response.data;
   },
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/api/Familles/${id}`);
+  archive: async (id: string): Promise<void> => {
+    await api.put(`/api/Familles/${id}/archive`);
+  },
+  getArchived: async (): Promise<Famille[]> => {
+    const response = await api.get('/api/Familles/archives');
+    return response.data;
+  },
+  restore: async (id: string): Promise<void> => {
+    await api.put(`/api/Familles/${id}/restore`);
   },
 };

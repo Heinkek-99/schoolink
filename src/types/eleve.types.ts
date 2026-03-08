@@ -57,3 +57,12 @@ export interface CreateEleveRequest {
   classeId: string;
   familleId: string;
 }
+
+export interface UpdateEleveRequest {
+  nom: string;
+  prenom: string;
+  dateNaissance: string;
+  lieuNaissance: string;
+  sexe: string;
+  classeId?: string;
+}
