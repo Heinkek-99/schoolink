@@ -27,7 +27,8 @@ const step2Schema = z.object({
 const newFamilleSchema = z.object({
   nomPere: z.string().min(1, 'Nom requis'),
   prenomPere: z.string().default(''),
-  telephonePrincipal: z.string().min(1, 'Téléphone requis'),
+  telephonePrincipal: z.string().min(1, 'Téléphone principal requis'),
+  telephonePere: z.string().optional(),
   emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
   nomMere: z.string().optional(),
   adresse: z.string().optional(),
@@ -75,9 +76,9 @@ export default function EleveCreate() {
     const cleanData: Record<string, any> = {
       nomPere: data.nomPere,
       telephonePrincipal: data.telephonePrincipal,
-      telephonePere: data.telephonePrincipal, // same as principal
     };
     if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.telephonePere) cleanData.telephonePere = data.telephonePere;
     if (data.emailPere) cleanData.emailPere = data.emailPere;
     if (data.nomMere) cleanData.nomMere = data.nomMere;
     if (data.adresse) cleanData.adresse = data.adresse;
@@ -229,10 +230,16 @@ export default function EleveCreate() {
                       <input {...formFamille.register('prenomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                     </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium mb-1 block">Téléphone principal *</label>
-                    <input {...formFamille.register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                    {formFamille.formState.errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.telephonePrincipal.message}</p>}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">Téléphone principal *</label>
+                      <input {...formFamille.register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      {formFamille.formState.errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.telephonePrincipal.message}</p>}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">Téléphone du père</label>
+                      <input {...formFamille.register('telephonePere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium mb-1 block">Adresse</label>

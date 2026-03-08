@@ -18,7 +18,8 @@ import type { Famille } from '@/types/famille.types';
 const familleSchema = z.object({
   nomPere: z.string().min(1, 'Nom du père requis'),
   prenomPere: z.string().default(''),
-  telephonePrincipal: z.string().min(1, 'Téléphone requis'),
+  telephonePrincipal: z.string().min(1, 'Téléphone principal requis'),
+  telephonePere: z.string().optional(),
   emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
   nomMere: z.string().optional(),
   prenomMere: z.string().optional(),
@@ -124,9 +125,9 @@ export default function FamillesPage() {
     const cleanData: Record<string, any> = {
       nomPere: data.nomPere,
       telephonePrincipal: data.telephonePrincipal,
-      telephonePere: data.telephonePrincipal,
     };
     if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.telephonePere) cleanData.telephonePere = data.telephonePere;
     if (data.emailPere) cleanData.emailPere = data.emailPere;
     if (data.nomMere) cleanData.nomMere = data.nomMere;
     if (data.prenomMere) cleanData.prenomMere = data.prenomMere;
@@ -273,10 +274,16 @@ export default function FamillesPage() {
                   <input {...register('prenomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Téléphone principal *</label>
-                <input {...register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                {errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{errors.telephonePrincipal.message}</p>}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Téléphone principal *</label>
+                  <input {...register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  {errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{errors.telephonePrincipal.message}</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Téléphone du père</label>
+                  <input {...register('telephonePere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Email</label>

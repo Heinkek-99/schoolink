@@ -18,6 +18,7 @@ const editFamilleSchema = z.object({
   nomPere: z.string().min(1, 'Nom requis'),
   prenomPere: z.string().default(''),
   telephonePrincipal: z.string().min(1, 'Téléphone requis'),
+  telephonePere: z.string().optional(),
   emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
   nomMere: z.string().optional(),
   prenomMere: z.string().optional(),
@@ -50,6 +51,7 @@ export default function FamilleDetail() {
         nomPere: famille.nomPere,
         prenomPere: famille.prenomPere || '',
         telephonePrincipal: famille.telephonePrincipal,
+        telephonePere: famille.telephonePere || '',
         emailPere: famille.emailPere || '',
         nomMere: famille.nomMere || '',
         prenomMere: famille.prenomMere || '',
@@ -62,14 +64,13 @@ export default function FamilleDetail() {
   };
 
   const onSave = (data: EditFamilleForm) => {
-    // Clean empty strings to undefined, and sync telephonePere with telephonePrincipal
     const cleanData: Record<string, any> = {
       id: id!,
       nomPere: data.nomPere,
       telephonePrincipal: data.telephonePrincipal,
-      telephonePere: data.telephonePrincipal,
     };
     if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.telephonePere) cleanData.telephonePere = data.telephonePere;
     if (data.emailPere) cleanData.emailPere = data.emailPere;
     if (data.nomMere) cleanData.nomMere = data.nomMere;
     if (data.prenomMere) cleanData.prenomMere = data.prenomMere;
@@ -77,9 +78,13 @@ export default function FamilleDetail() {
     if (data.adresse) cleanData.adresse = data.adresse;
     if (data.ville) cleanData.ville = data.ville;
 
+    console.log('[UpdateFamille] Sending:', cleanData);
     updateMutation.mutate(
       cleanData as any,
-      { onSuccess: () => setIsEditing(false) }
+      {
+        onSuccess: () => { console.log('[UpdateFamille] Success'); setIsEditing(false); },
+        onError: (err: any) => console.error('[UpdateFamille] Error:', err),
+      }
     );
   };
 
@@ -262,6 +267,10 @@ export default function FamilleDetail() {
                   <input {...editForm.register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
                 <div>
+                  <label className="text-sm font-medium mb-1 block">Téléphone du père</label>
+                  <input {...editForm.register('telephonePere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+                <div>
                   <label className="text-sm font-medium mb-1 block">Email</label>
                   <input {...editForm.register('emailPere')} type="email" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
@@ -301,6 +310,7 @@ export default function FamilleDetail() {
                 <div><span className="text-muted-foreground">Nom du père:</span> <strong>{famille.nomPere}</strong></div>
                 <div><span className="text-muted-foreground">Prénom du père:</span> <strong>{famille.prenomPere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Téléphone principal:</span> <strong>{famille.telephonePrincipal}</strong></div>
+                <div><span className="text-muted-foreground">Téléphone du père:</span> <strong>{famille.telephonePere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Email:</span> <strong>{famille.emailPere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Nom de la mère:</span> <strong>{famille.nomMere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Prénom de la mère:</span> <strong>{famille.prenomMere || '-'}</strong></div>
