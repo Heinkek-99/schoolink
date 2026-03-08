@@ -30,7 +30,7 @@ export default function EleveDetail() {
   const navigate = useNavigate();
   const { data: eleve, isLoading } = useEleve(id!);
   const { data: classes } = useClasses();
-  const archiveMutation = useArchiveEleve();
+  const deleteMutation = useDeleteEleve();
   const updateMutation = useUpdateEleve();
   const { canEdit, isAdmin } = usePermissions();
   const [activeTab, setActiveTab] = useState<'informations' | 'finances' | 'notes' | 'documents'>('informations');
