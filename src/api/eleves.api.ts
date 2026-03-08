@@ -22,8 +22,8 @@ export const elevesApi = {
     const response = await api.get('/api/Classes');
     return response.data;
   },
-  archive: async (id: string): Promise<void> => {
-    await api.put(`/api/Eleves/${id}/archive`);
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/api/Eleves/${id}`);
   },
   getArchived: async (): Promise<Eleve[]> => {
     const response = await api.get('/api/Eleves/archives');
