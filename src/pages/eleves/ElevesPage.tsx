@@ -7,12 +7,14 @@ import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { TableSkeleton } from '@/components/shared/Skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useEleves, useClasses } from '@/hooks/useEleves';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ElevesPage() {
   const navigate = useNavigate();
   const { data: eleves, isLoading } = useEleves();
   const { data: classes } = useClasses();
+  const { canCreate } = usePermissions();
   const [search, setSearch] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
 
@@ -27,12 +29,14 @@ export default function ElevesPage() {
   return (
     <div>
       <PageHeader title="Élèves" subtitle={`${eleves?.length ?? 0} élèves inscrits`}>
-        <button
-          onClick={() => navigate('/eleves/nouveau')}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={18} /> Nouvelle inscription
-        </button>
+        {canCreate('eleves') && (
+          <button
+            onClick={() => navigate('/eleves/nouveau')}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Plus size={18} /> Nouvelle inscription
+          </button>
+        )}
       </PageHeader>
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">

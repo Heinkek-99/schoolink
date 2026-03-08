@@ -1,8 +1,11 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User, CalendarDays } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
+import { NotificationPanel } from './NotificationPanel';
 
 export function Header() {
   const user = useAuthStore((s) => s.user);
+  const { anneeScolaire, setAnneeScolaire, availableYears } = useAnneeScolaireStore();
 
   return (
     <header className="h-16 bg-card border-b flex items-center justify-between px-6 shrink-0">
@@ -16,10 +19,21 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
-          <Bell size={20} strokeWidth={1.5} className="text-muted-foreground" />
-          <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
-        </button>
+        {/* Année scolaire selector */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+          <CalendarDays size={16} className="text-muted-foreground" />
+          <select
+            value={anneeScolaire}
+            onChange={(e) => setAnneeScolaire(e.target.value)}
+            className="bg-transparent text-sm font-medium outline-none cursor-pointer text-foreground"
+          >
+            {availableYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+
+        <NotificationPanel />
 
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">

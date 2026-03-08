@@ -7,10 +7,12 @@ import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { TableSkeleton } from '@/components/shared/Skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useFamilles, useCreateFamille } from '@/hooks/useFamilles';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useNotificationStore } from '@/store/notificationStore';
 
 const familleSchema = z.object({
   nomPere: z.string().min(1, 'Nom du père requis'),
@@ -29,6 +31,8 @@ export default function FamillesPage() {
   const navigate = useNavigate();
   const { data: familles, isLoading } = useFamilles();
   const createMutation = useCreateFamille();
+  const { canCreate } = usePermissions();
+  const addNotification = useNotificationStore((s) => s.addNotification);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -48,6 +52,7 @@ export default function FamillesPage() {
   const onSubmit = (data: FamilleForm) => {
     createMutation.mutate(data as any, {
       onSuccess: () => {
+        addNotification({ type: 'info', title: 'Nouvelle famille', message: `Famille ${data.nomPere} créée avec succès` });
         setShowModal(false);
         reset();
       },
@@ -57,12 +62,14 @@ export default function FamillesPage() {
   return (
     <div>
       <PageHeader title="Familles" subtitle={`${familles?.length ?? 0} familles enregistrées`}>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={18} /> Nouvelle famille
-        </button>
+        {canCreate('familles') && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Plus size={18} /> Nouvelle famille
+          </button>
+        )}
       </PageHeader>
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">

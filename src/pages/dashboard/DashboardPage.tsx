@@ -1,22 +1,21 @@
-import { Users, GraduationCap, Banknote, AlertTriangle, Plus, Percent } from 'lucide-react';
+import { Users, GraduationCap, Banknote, AlertTriangle, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { KpiSkeleton, TableSkeleton } from '@/components/shared/Skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useDashboardStats, useFamillesImpayes } from '@/hooks/useDashboard';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
-
-const CHART_COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: impayes, isLoading: impayesLoading } = useFamillesImpayes();
+  const { canCreate } = usePermissions();
 
-  // Build chart data from stats
   const classeChartData = stats?.statistiquesParClasse
     ?.filter((c) => c.nombreEleves > 0)
     .map((c) => ({ nom: c.nomClasse, eleves: c.nombreEleves, taux: c.tauxRecouvrement })) || [];
@@ -24,18 +23,22 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader title="Tableau de bord" subtitle="Vue d'ensemble de votre établissement">
-        <button
-          onClick={() => navigate('/eleves/nouveau')}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={18} /> Inscription
-        </button>
-        <button
-          onClick={() => navigate('/finances/paiement')}
-          className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90 transition-colors"
-        >
-          <Plus size={18} /> Paiement
-        </button>
+        {canCreate('eleves') && (
+          <button
+            onClick={() => navigate('/eleves/nouveau')}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Plus size={18} /> Inscription
+          </button>
+        )}
+        {canCreate('paiements') && (
+          <button
+            onClick={() => navigate('/finances/paiement')}
+            className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90 transition-colors"
+          >
+            <Plus size={18} /> Paiement
+          </button>
+        )}
       </PageHeader>
 
       {/* KPI Cards */}
@@ -52,7 +55,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Taux de recouvrement + Classes chart */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-2 bg-card rounded-xl border shadow-sm p-5">
           <h3 className="font-semibold text-foreground mb-4">Effectifs par classe</h3>
@@ -121,10 +124,7 @@ export default function DashboardPage() {
                     <td className="py-3">{formatCurrency(f.totalDu)}</td>
                     <td className="py-3"><PaymentStatusBadge status={f.statutPaiement} /></td>
                     <td className="py-3">
-                      <button
-                        onClick={() => navigate(`/familles/${f.id}`)}
-                        className="text-primary text-sm hover:underline"
-                      >
+                      <button onClick={() => navigate(`/familles/${f.id}`)} className="text-primary text-sm hover:underline">
                         Voir détails
                       </button>
                     </td>

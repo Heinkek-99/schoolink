@@ -5,9 +5,10 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { useLogout } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 import schoolflowLogo from '@/assets/schoolflow-logo.png';
 
-const navItems = [
+const allNavItems = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard },
   { to: '/familles', label: 'Familles', icon: Users },
   { to: '/eleves', label: 'Élèves', icon: GraduationCap },
@@ -20,6 +21,9 @@ export function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useAppStore();
   const location = useLocation();
   const logout = useLogout();
+  const { allowedNavItems } = usePermissions();
+
+  const navItems = allNavItems.filter((item) => allowedNavItems.includes(item.to));
 
   return (
     <aside
