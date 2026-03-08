@@ -285,10 +285,10 @@ export default function PaiementCreate() {
           <h2 className="text-lg font-semibold mb-4">Confirmation</h2>
           <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
             <p><span className="text-muted-foreground">Famille:</span> <strong>{familleDetail?.nomPere} {familleDetail?.prenomPere}</strong></p>
-            <p><span className="text-muted-foreground">Date:</span> <strong>{getValues('date')}</strong></p>
-            <p><span className="text-muted-foreground">Montant:</span> <strong>{formatCurrency(getValues('montant'))}</strong></p>
-            <p><span className="text-muted-foreground">Mode:</span> <strong>{getValues('mode')}</strong></p>
-            {getValues('reference') && <p><span className="text-muted-foreground">Référence:</span> <strong>{getValues('reference')}</strong></p>}
+            <p><span className="text-muted-foreground">Date:</span> <strong>{formValues.date}</strong></p>
+            <p><span className="text-muted-foreground">Montant:</span> <strong>{formatCurrency(formValues.montant)}</strong></p>
+            <p><span className="text-muted-foreground">Mode:</span> <strong>{formValues.mode}</strong></p>
+            {formValues.reference && <p><span className="text-muted-foreground">Référence:</span> <strong>{formValues.reference}</strong></p>}
             <hr className="my-3" />
             <p className="font-medium">Ventilation:</p>
             {familleDetail?.enfants?.filter((e) => ventilations[e.id] > 0).map((e) => (
