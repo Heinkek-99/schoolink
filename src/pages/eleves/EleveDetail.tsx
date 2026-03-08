@@ -17,6 +17,7 @@ export default function EleveDetail() {
   const navigate = useNavigate();
   const { data: eleve, isLoading } = useEleve(id!);
   const [activeTab, setActiveTab] = useState<'informations' | 'finances' | 'notes' | 'documents'>('informations');
+  const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
   if (isLoading) return <div className="grid grid-cols-3 gap-4">{Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)}</div>;
   if (!eleve) return <div className="text-center py-16 text-muted-foreground">Élève non trouvé</div>;
