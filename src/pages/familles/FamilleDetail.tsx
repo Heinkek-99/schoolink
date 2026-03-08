@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Phone, Mail, MapPin, Save, Trash2, Banknote, Percent } from 'lucide-react';
-import { useFamille, useUpdateFamille, useDeleteFamille } from '@/hooks/useFamilles';
+import { ArrowLeft, Phone, Mail, MapPin, Save, Archive, Pencil, Banknote, Percent } from 'lucide-react';
+import { useFamille, useUpdateFamille, useArchiveFamille } from '@/hooks/useFamilles';
 import { usePaiementsByFamille } from '@/hooks/usePaiements';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
@@ -34,11 +34,11 @@ export default function FamilleDetail() {
   const { data: famille, isLoading } = useFamille(id!);
   const { data: paiements } = usePaiementsByFamille(id!);
   const updateMutation = useUpdateFamille();
-  const deleteMutation = useDeleteFamille();
-  const { canEdit, canDelete } = usePermissions();
+  const archiveMutation = useArchiveFamille();
+  const { canEdit, canDelete, isAdmin } = usePermissions();
   const [activeTab, setActiveTab] = useState<'enfants' | 'paiements' | 'informations'>('enfants');
   const [isEditing, setIsEditing] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
 
   const editForm = useForm<EditFamilleForm>({
     resolver: zodResolver(editFamilleSchema),
@@ -68,8 +68,8 @@ export default function FamilleDetail() {
     );
   };
 
-  const handleDelete = () => {
-    deleteMutation.mutate(id!, {
+  const handleArchive = () => {
+    archiveMutation.mutate(id!, {
       onSuccess: () => navigate('/familles'),
     });
   };
@@ -108,36 +108,47 @@ export default function FamilleDetail() {
               {famille.ville && <span className="flex items-center gap-1"><MapPin size={14} /> {famille.ville}</span>}
             </div>
           </div>
-          {canDelete('familles') && (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
-            >
-              <Trash2 size={16} /> Supprimer
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {canEdit('familles') && (
+              <button
+                onClick={startEditing}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+              >
+                <Pencil size={16} /> Modifier
+              </button>
+            )}
+            {isAdmin && (
+              <button
+                onClick={() => setShowArchiveConfirm(true)}
+                className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
+              >
+                <Archive size={16} /> Archiver
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Delete confirmation modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDeleteConfirm(false)}>
+      {/* Archive confirmation modal */}
+      {showArchiveConfirm && (
+        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowArchiveConfirm(false)}>
           <div className="bg-card rounded-xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cette famille ?</h3>
+            <h3 className="text-lg font-bold text-destructive mb-2">Archiver cette famille ?</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Cette action est irréversible. La famille <strong>{famille.nomPere} {famille.prenomPere}</strong> 
-              {famille.enfants?.length > 0 && ` et ses ${famille.enfants.length} enfant(s) associé(s)`} seront supprimés.
+              La famille <strong>{famille.nomPere} {famille.prenomPere}</strong>
+              {famille.enfants?.length > 0 && ` et ses ${famille.enfants.length} enfant(s) associé(s)`} seront archivés.
+              Vous pourrez la restaurer depuis les archives.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+              <button onClick={() => setShowArchiveConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
                 Annuler
               </button>
               <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
+                onClick={handleArchive}
+                disabled={archiveMutation.isPending}
                 className="flex-1 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
               >
-                {deleteMutation.isPending ? 'Suppression...' : 'Confirmer la suppression'}
+                {archiveMutation.isPending ? 'Archivage...' : 'Confirmer'}
               </button>
             </div>
           </div>
@@ -155,7 +166,7 @@ export default function FamilleDetail() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => { setActiveTab(tab.key); if (tab.key !== 'informations') setIsEditing(false); }}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}

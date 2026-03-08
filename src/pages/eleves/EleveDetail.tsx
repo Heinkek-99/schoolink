@@ -1,7 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { ArrowLeft, CreditCard, FileText, BarChart3, ClipboardList, Download, Trash2, Banknote } from 'lucide-react';
-import { useEleve, useDeleteEleve } from '@/hooks/useEleves';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ArrowLeft, CreditCard, FileText, BarChart3, ClipboardList, Download, Archive, Pencil, Save, Banknote } from 'lucide-react';
+import { useEleve, useArchiveEleve, useUpdateEleve, useClasses } from '@/hooks/useEleves';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { KpiSkeleton } from '@/components/shared/Skeletons';
@@ -12,18 +15,55 @@ import { generateStudentCardPDF } from '@/utils/generatePDF';
 import { getPaymentStatus } from '@/utils/constants';
 import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
 
+const editEleveSchema = z.object({
+  nom: z.string().min(1, 'Nom requis'),
+  prenom: z.string().min(1, 'Prénom requis'),
+  dateNaissance: z.string().min(1, 'Date requise'),
+  lieuNaissance: z.string().min(1, 'Lieu requis'),
+  sexe: z.string().min(1, 'Sexe requis'),
+});
+
+type EditEleveForm = z.infer<typeof editEleveSchema>;
+
 export default function EleveDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: eleve, isLoading } = useEleve(id!);
-  const deleteMutation = useDeleteEleve();
-  const { canDelete } = usePermissions();
+  const { data: classes } = useClasses();
+  const archiveMutation = useArchiveEleve();
+  const updateMutation = useUpdateEleve();
+  const { canEdit, isAdmin } = usePermissions();
   const [activeTab, setActiveTab] = useState<'informations' | 'finances' | 'notes' | 'documents'>('informations');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
-  const handleDelete = () => {
-    deleteMutation.mutate(id!, {
+  const editForm = useForm<EditEleveForm>({
+    resolver: zodResolver(editEleveSchema),
+  });
+
+  const startEditing = () => {
+    if (eleve) {
+      editForm.reset({
+        nom: eleve.nom,
+        prenom: eleve.prenom,
+        dateNaissance: eleve.dateNaissance?.split('T')[0] || '',
+        lieuNaissance: eleve.lieuNaissance,
+        sexe: eleve.sexe,
+      });
+    }
+    setIsEditing(true);
+  };
+
+  const onSave = (data: EditEleveForm) => {
+    updateMutation.mutate(
+      { id: id!, data },
+      { onSuccess: () => setIsEditing(false) }
+    );
+  };
+
+  const handleArchive = () => {
+    archiveMutation.mutate(id!, {
       onSuccess: () => navigate('/eleves'),
     });
   };
@@ -58,37 +98,94 @@ export default function EleveDetail() {
               </div>
             </div>
           </div>
-          {canDelete('eleves') && (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
-            >
-              <Trash2 size={16} /> Supprimer
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {canEdit('eleves') && (
+              <button
+                onClick={startEditing}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+              >
+                <Pencil size={16} /> Modifier
+              </button>
+            )}
+            {isAdmin && (
+              <button
+                onClick={() => setShowArchiveConfirm(true)}
+                className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
+              >
+                <Archive size={16} /> Archiver
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Delete confirmation */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDeleteConfirm(false)}>
+      {/* Archive confirmation */}
+      {showArchiveConfirm && (
+        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowArchiveConfirm(false)}>
           <div className="bg-card rounded-xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cet élève ?</h3>
+            <h3 className="text-lg font-bold text-destructive mb-2">Archiver cet élève ?</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Cette action est irréversible. L'élève <strong>{eleve.prenom} {eleve.nom}</strong> ({eleve.matricule}) sera supprimé définitivement.
+              L'élève <strong>{eleve.prenom} {eleve.nom}</strong> ({eleve.matricule}) sera archivé.
+              Vous pourrez le restaurer depuis les archives.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+              <button onClick={() => setShowArchiveConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
                 Annuler
               </button>
               <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
+                onClick={handleArchive}
+                disabled={archiveMutation.isPending}
                 className="flex-1 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
               >
-                {deleteMutation.isPending ? 'Suppression...' : 'Confirmer'}
+                {archiveMutation.isPending ? 'Archivage...' : 'Confirmer'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setIsEditing(false)}>
+          <div className="bg-card rounded-xl shadow-lg w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-bold mb-4">Modifier l'élève</h2>
+            <form onSubmit={editForm.handleSubmit(onSave)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Nom *</label>
+                  <input {...editForm.register('nom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Prénom *</label>
+                  <input {...editForm.register('prenom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Date de naissance *</label>
+                  <input {...editForm.register('dateNaissance')} type="date" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Lieu de naissance *</label>
+                  <input {...editForm.register('lieuNaissance')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Sexe *</label>
+                <select {...editForm.register('sexe')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                  <option value="0">Masculin</option>
+                  <option value="1">Féminin</option>
+                </select>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setIsEditing(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+                  Annuler
+                </button>
+                <button type="submit" disabled={updateMutation.isPending} className="flex-1 flex items-center justify-center gap-2 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                  <Save size={16} /> {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
