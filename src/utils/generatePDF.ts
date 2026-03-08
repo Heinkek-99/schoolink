@@ -362,10 +362,11 @@ export function generateStudentCardPDF(data: {
   // Credit card size: 85.6mm x 54mm
   const doc = new jsPDF({ format: [85.6, 54], unit: 'mm', orientation: 'landscape' });
   const etab = getEtablissement();
+  const logo = getLogo();
   const w = 85.6;
   const h = 54;
 
-  // White background + border
+  // Border
   doc.setDrawColor(0, 100, 0);
   doc.setLineWidth(0.5);
   doc.rect(1, 1, w - 2, h - 2);
@@ -375,21 +376,25 @@ export function generateStudentCardPDF(data: {
   // Top band - green
   doc.setFillColor(0, 128, 0);
   doc.rect(2, 2, w - 4, 8, 'F');
-
-  // Red stripe
   doc.setFillColor(206, 17, 38);
   doc.rect(2, 10, w - 4, 1.5, 'F');
-
-  // Yellow stripe
   doc.setFillColor(252, 209, 22);
   doc.rect(2, 11.5, w - 4, 1.5, 'F');
 
-  // School name in green band
-  doc.setFontSize(6);
+  // Flag top-left in the green band
+  drawCameroonFlag(doc, 3, 2.5, 9, 7);
+
+  // Logo top-right (in green band)
+  if (logo) {
+    try { doc.addImage(logo, 'PNG', w - 12, 2.5, 9, 7); } catch {}
+  }
+
+  // Country + school text in green band
+  doc.setFontSize(5.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
   doc.text('REPUBLIC OF CAMEROON', w / 2, 5.5, { align: 'center' });
-  doc.setFontSize(4.5);
+  doc.setFontSize(3.8);
   doc.setFont('helvetica', 'italic');
   doc.text('RÉPUBLIQUE DU CAMEROUN', w / 2, 8, { align: 'center' });
   doc.setTextColor(0, 0, 0);
@@ -409,19 +414,16 @@ export function generateStudentCardPDF(data: {
   doc.text('CARTE IDENTITÉ SCOLAIRE', 4.5, 48, { angle: 90 });
   doc.setTextColor(0, 0, 0);
 
-  // Student info - left side
+  // Student info
   const startY = 20;
   const labelX = 8;
   const valueX = 28;
   const lineH = 4.5;
 
-  doc.setFontSize(4.5);
-  doc.setFont('helvetica', 'normal');
-
   const fields = [
     { label: 'Nom / Name', value: data.nom.toUpperCase() },
     { label: 'Prénom / Surname', value: data.prenom },
-    { label: 'Né(e) le / Born on', value: data.dateNaissance || '-' },
+    { label: 'Né(e) le / Born on', value: data.dateNaissance ? new Date(data.dateNaissance).toLocaleDateString('fr-FR') : '-' },
     { label: 'A / At', value: data.lieuNaissance || '-' },
     { label: 'Classe / Class', value: data.classe },
     { label: 'Matricule', value: data.matricule },
@@ -438,7 +440,7 @@ export function generateStudentCardPDF(data: {
     doc.text(f.value, valueX, y);
   });
 
-  // Photo placeholder - right side
+  // Photo area - right side
   const photoX = w - 25;
   const photoY = 20;
   const photoW = 18;
@@ -448,11 +450,27 @@ export function generateStudentCardPDF(data: {
   doc.setLineWidth(0.3);
   doc.rect(photoX, photoY, photoW, photoH);
 
-  doc.setFontSize(4);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(150, 150, 150);
-  doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
+  if (data.photoUrl) {
+    try {
+      doc.addImage(data.photoUrl, 'JPEG', photoX, photoY, photoW, photoH);
+    } catch {
+      try {
+        doc.addImage(data.photoUrl, 'PNG', photoX, photoY, photoW, photoH);
+      } catch {
+        doc.setFontSize(4);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(150, 150, 150);
+        doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
+      }
+    }
+  } else {
+    doc.setFontSize(4);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(150, 150, 150);
+    doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+  }
 
   // Stamp area
   doc.setFontSize(3);
@@ -468,7 +486,6 @@ export function generateStudentCardPDF(data: {
   doc.text('NB : Cette carte est strictement personnelle et devra être présentée à toute réquisition', w / 2, h - 3, { align: 'center' });
   doc.setTextColor(0, 0, 0);
 
-  // Contact info bottom right
   if (etab.telephone || etab.ville) {
     doc.setFontSize(3);
     doc.setFont('helvetica', 'normal');
