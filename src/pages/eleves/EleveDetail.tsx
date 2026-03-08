@@ -57,7 +57,7 @@ export default function EleveDetail() {
 
   const onSave = (data: EditEleveForm) => {
     updateMutation.mutate(
-      { id: id!, data },
+      { id: id!, data: { nom: data.nom, prenom: data.prenom, dateNaissance: data.dateNaissance, lieuNaissance: data.lieuNaissance, sexe: data.sexe } },
       { onSuccess: () => setIsEditing(false) }
     );
   };
