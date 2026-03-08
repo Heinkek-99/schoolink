@@ -7,6 +7,7 @@ import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { TableSkeleton } from '@/components/shared/Skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useEleves, useClasses } from '@/hooks/useEleves';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ElevesPage() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function ElevesPage() {
 
   const filtered = eleves?.filter((e) => {
     const matchSearch = !search || `${e.nom} ${e.prenom} ${e.matricule}`.toLowerCase().includes(search.toLowerCase());
-    const matchClasse = !classeFilter || e.classeId === classeFilter;
+    const matchClasse = !classeFilter || e.classe === classeFilter;
     return matchSearch && matchClasse;
   });
 
@@ -43,7 +44,7 @@ export default function ElevesPage() {
         >
           <option value="">Toutes les classes</option>
           {classes?.map((c) => (
-            <option key={c.id} value={c.id}>{c.nom}</option>
+            <option key={c.id} value={c.nom}>{c.nom}</option>
           ))}
         </select>
       </div>
@@ -64,6 +65,7 @@ export default function ElevesPage() {
                   <th className="text-left p-4 font-medium text-muted-foreground">Nom complet</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Classe</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Famille</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
                 </tr>
               </thead>
@@ -73,8 +75,9 @@ export default function ElevesPage() {
                     <td className="p-4"><span className="status-badge-active font-mono">{e.matricule}</span></td>
                     <td className="p-4 font-medium">{e.prenom} {e.nom}</td>
                     <td className="p-4">{e.classe || '-'}</td>
-                    <td className="p-4">{e.familleNom || '-'}</td>
-                    <td className="p-4"><PaymentStatusBadge due={0} paid={0} status={e.statut} /></td>
+                    <td className="p-4">{e.famille || '-'}</td>
+                    <td className="p-4">{formatCurrency(e.solde)}</td>
+                    <td className="p-4"><PaymentStatusBadge status={e.statut} /></td>
                   </tr>
                 ))}
               </tbody>

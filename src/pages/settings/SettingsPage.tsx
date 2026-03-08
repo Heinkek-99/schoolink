@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Settings, School, CreditCard, Users, Bell, Plus, Save, Trash2 } from 'lucide-react';
+import { School, CreditCard, Users, Bell, Plus, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,10 +51,19 @@ export default function SettingsPage() {
     resolver: zodResolver(typeFraisSchema),
   });
 
+  // Load saved etablissement data
+  useEffect(() => {
+    const saved = localStorage.getItem('etablissement');
+    if (saved) {
+      try {
+        etabForm.reset(JSON.parse(saved));
+      } catch {}
+    }
+  }, []);
+
   const onSaveEtablissement = (data: EtablissementForm) => {
-    // Save to localStorage for now (no API endpoint for this)
     localStorage.setItem('etablissement', JSON.stringify(data));
-    toast.success('Informations de l\'établissement enregistrées');
+    toast.success("Informations de l'établissement enregistrées");
   };
 
   const onCreateTypeFrais = (data: TypeFraisForm) => {
@@ -69,16 +78,6 @@ export default function SettingsPage() {
     );
   };
 
-  // Load saved etablissement data
-  useState(() => {
-    const saved = localStorage.getItem('etablissement');
-    if (saved) {
-      try {
-        etabForm.reset(JSON.parse(saved));
-      } catch {}
-    }
-  });
-
   const sections = [
     { key: 'etablissement' as const, label: 'Établissement', desc: "Informations de l'école", icon: School },
     { key: 'typefrais' as const, label: 'Types de frais', desc: 'Gérer les frais scolaires', icon: CreditCard },
@@ -91,7 +90,6 @@ export default function SettingsPage() {
       <PageHeader title="Paramètres" subtitle="Configuration de l'application" />
 
       <div className="flex gap-6 flex-col lg:flex-row">
-        {/* Sidebar nav */}
         <div className="lg:w-64 shrink-0">
           <div className="space-y-1">
             {sections.map((s) => (
@@ -99,9 +97,7 @@ export default function SettingsPage() {
                 key={s.key}
                 onClick={() => setActiveSection(s.key)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm transition-colors ${
-                  activeSection === s.key
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'hover:bg-muted text-muted-foreground'
+                  activeSection === s.key ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-muted-foreground'
                 }`}
               >
                 <s.icon size={20} strokeWidth={1.5} />
@@ -114,7 +110,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex-1">
           {activeSection === 'etablissement' && (
             <div className="bg-card rounded-xl border shadow-sm p-6">
@@ -123,8 +118,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium mb-1 block">Nom de l'établissement *</label>
-                    <input {...etabForm.register('nomEtablissement')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" placeholder="Ex: École Saint-Joseph" />
-                    {etabForm.formState.errors.nomEtablissement && <p className="text-xs text-destructive mt-1">{etabForm.formState.errors.nomEtablissement.message}</p>}
+                    <input {...etabForm.register('nomEtablissement')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-1 block">Directeur</label>
@@ -133,7 +127,6 @@ export default function SettingsPage() {
                   <div>
                     <label className="text-sm font-medium mb-1 block">Année scolaire *</label>
                     <input {...etabForm.register('anneeScolaire')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                    {etabForm.formState.errors.anneeScolaire && <p className="text-xs text-destructive mt-1">{etabForm.formState.errors.anneeScolaire.message}</p>}
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-1 block">Téléphone</label>
@@ -162,72 +155,68 @@ export default function SettingsPage() {
           )}
 
           {activeSection === 'typefrais' && (
-            <div className="space-y-4">
-              <div className="bg-card rounded-xl border shadow-sm p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Types de frais scolaires</h2>
-                  <button
-                    onClick={() => setShowNewTypeFrais(!showNewTypeFrais)}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-                  >
-                    <Plus size={16} /> Nouveau type
-                  </button>
-                </div>
-
-                {showNewTypeFrais && (
-                  <form onSubmit={typeFraisForm.handleSubmit(onCreateTypeFrais)} className="border rounded-lg p-4 mb-4 bg-muted/30 space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Nom *</label>
-                        <input {...typeFraisForm.register('nom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" placeholder="Ex: Inscription" />
-                        {typeFraisForm.formState.errors.nom && <p className="text-xs text-destructive mt-1">{typeFraisForm.formState.errors.nom.message}</p>}
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Montant (FCFA) *</label>
-                        <input {...typeFraisForm.register('montant', { valueAsNumber: true })} type="number" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                        {typeFraisForm.formState.errors.montant && <p className="text-xs text-destructive mt-1">{typeFraisForm.formState.errors.montant.message}</p>}
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Description</label>
-                        <input {...typeFraisForm.register('description')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => setShowNewTypeFrais(false)} className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">Annuler</button>
-                      <button type="submit" disabled={createTypeFraisMutation.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors">
-                        {createTypeFraisMutation.isPending ? 'Création...' : 'Créer'}
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {typeFraisLoading ? (
-                  <TableSkeleton rows={4} cols={3} />
-                ) : !typeFrais?.length ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">Aucun type de frais configuré</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/50">
-                          <th className="text-left p-4 font-medium text-muted-foreground">Nom</th>
-                          <th className="text-left p-4 font-medium text-muted-foreground">Montant</th>
-                          <th className="text-left p-4 font-medium text-muted-foreground">Description</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {typeFrais.map((tf) => (
-                          <tr key={tf.id} className="hover:bg-muted/30 transition-colors">
-                            <td className="p-4 font-medium">{tf.nom}</td>
-                            <td className="p-4">{formatCurrency(tf.montant)}</td>
-                            <td className="p-4 text-muted-foreground">{tf.description || '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+            <div className="bg-card rounded-xl border shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Types de frais scolaires</h2>
+                <button
+                  onClick={() => setShowNewTypeFrais(!showNewTypeFrais)}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  <Plus size={16} /> Nouveau type
+                </button>
               </div>
+
+              {showNewTypeFrais && (
+                <form onSubmit={typeFraisForm.handleSubmit(onCreateTypeFrais)} className="border rounded-lg p-4 mb-4 bg-muted/30 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Nom *</label>
+                      <input {...typeFraisForm.register('nom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Montant (FCFA) *</label>
+                      <input {...typeFraisForm.register('montant', { valueAsNumber: true })} type="number" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Description</label>
+                      <input {...typeFraisForm.register('description')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setShowNewTypeFrais(false)} className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">Annuler</button>
+                    <button type="submit" disabled={createTypeFraisMutation.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                      {createTypeFraisMutation.isPending ? 'Création...' : 'Créer'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {typeFraisLoading ? (
+                <TableSkeleton rows={4} cols={3} />
+              ) : !typeFrais?.length ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">Aucun type de frais configuré</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="text-left p-4 font-medium text-muted-foreground">Nom</th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">Montant</th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {typeFrais.map((tf: any) => (
+                        <tr key={tf.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="p-4 font-medium">{tf.nom || tf.libelle}</td>
+                          <td className="p-4">{formatCurrency(tf.montant)}</td>
+                          <td className="p-4 text-muted-foreground">{tf.description || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

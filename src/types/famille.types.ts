@@ -1,37 +1,54 @@
+// Famille list item (from GET /api/Familles)
 export interface Famille {
   id: string;
-  nom: string;
-  prenom: string;
-  telephone: string;
-  email?: string;
-  adresse?: string;
+  nomPere: string;
+  prenomPere: string;
+  telephonePrincipal: string;
   ville?: string;
-  codePostal?: string;
   nombreEnfants: number;
   totalDu: number;
   totalPaye: number;
-  solde: number;
-  statut: 'À jour' | 'Partiel' | 'Impayé';
-  enfants?: FamilleEnfant[];
-  createdAt?: string;
+  soldeGlobal: number;
+  statutPaiement: string;
+}
+
+// Famille detail (from GET /api/Familles/{id})
+export interface FamilleDetail {
+  id: string;
+  nomPere: string;
+  prenomPere: string;
+  telephonePere?: string;
+  emailPere?: string;
+  nomMere?: string;
+  prenomMere?: string;
+  telephoneMere?: string;
+  adresse?: string;
+  ville?: string;
+  telephonePrincipal: string;
+  enfants: FamilleEnfant[];
+  totalDu: number;
+  totalPaye: number;
+  soldeGlobal: number;
 }
 
 export interface FamilleEnfant {
   id: string;
   nom: string;
   prenom: string;
+  matricule: string;
   classe: string;
-  totalDu: number;
-  totalPaye: number;
   solde: number;
-  statut: string;
 }
 
 export interface CreateFamilleRequest {
-  nom: string;
-  prenom: string;
-  telephone: string;
-  email?: string;
+  nomPere: string;
+  prenomPere?: string;
+  telephonePrincipal: string;
+  telephonePere?: string;
+  emailPere?: string;
+  nomMere?: string;
+  prenomMere?: string;
+  telephoneMere?: string;
   adresse?: string;
   ville?: string;
 }

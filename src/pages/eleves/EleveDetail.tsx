@@ -9,7 +9,7 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { Banknote } from 'lucide-react';
 import { generateStudentCardPDF } from '@/utils/generatePDF';
-import { ANNEE_SCOLAIRE } from '@/utils/constants';
+import { ANNEE_SCOLAIRE, getPaymentStatus } from '@/utils/constants';
 
 export default function EleveDetail() {
   const { id } = useParams<{ id: string }>();
@@ -44,7 +44,6 @@ export default function EleveDetail() {
             <div className="flex items-center gap-3 mt-1">
               <span className="status-badge-active font-mono">{eleve.matricule}</span>
               <span className="text-sm text-muted-foreground">{eleve.classe || '-'}</span>
-              <PaymentStatusBadge due={0} paid={0} status={eleve.statut} />
             </div>
           </div>
         </div>
@@ -72,10 +71,10 @@ export default function EleveDetail() {
             <div><span className="text-muted-foreground">Prénom:</span> <strong>{eleve.prenom}</strong></div>
             <div><span className="text-muted-foreground">Date de naissance:</span> <strong>{formatDate(eleve.dateNaissance)}</strong></div>
             <div><span className="text-muted-foreground">Lieu de naissance:</span> <strong>{eleve.lieuNaissance}</strong></div>
-            <div><span className="text-muted-foreground">Sexe:</span> <strong>{eleve.sexe === 'M' ? 'Masculin' : 'Féminin'}</strong></div>
+            <div><span className="text-muted-foreground">Sexe:</span> <strong>{eleve.sexe === 'M' || eleve.sexe === '0' ? 'Masculin' : 'Féminin'}</strong></div>
             <div><span className="text-muted-foreground">Matricule:</span> <strong>{eleve.matricule}</strong></div>
             <div><span className="text-muted-foreground">Classe:</span> <strong>{eleve.classe || '-'}</strong></div>
-            <div><span className="text-muted-foreground">Famille:</span> <strong>{eleve.familleNom || '-'}</strong></div>
+            <div><span className="text-muted-foreground">Famille:</span> <strong>{eleve.famille || '-'}</strong></div>
           </div>
         </div>
       )}
@@ -94,20 +93,26 @@ export default function EleveDetail() {
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="text-left p-4 font-medium text-muted-foreground">Type</th>
+                    <th className="text-left p-4 font-medium text-muted-foreground">Période</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Montant</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Payé</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>
+                    <th className="text-left p-4 font-medium text-muted-foreground">Échéance</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {eleve.frais.map((f) => (
                     <tr key={f.id}>
-                      <td className="p-4">{f.typeFrais}</td>
+                      <td className="p-4">{f.libelle}</td>
+                      <td className="p-4 text-muted-foreground">{f.periode || '-'}</td>
                       <td className="p-4">{formatCurrency(f.montant)}</td>
-                      <td className="p-4">{formatCurrency(f.paye)}</td>
-                      <td className="p-4 font-medium">{formatCurrency(f.solde)}</td>
-                      <td className="p-4"><PaymentStatusBadge due={f.montant} paid={f.paye} status={f.statut} /></td>
+                      <td className="p-4">{formatCurrency(f.montantPaye)}</td>
+                      <td className="p-4 font-medium">{formatCurrency(f.montant - f.montantPaye)}</td>
+                      <td className="p-4 text-muted-foreground">{f.echeance ? formatDate(f.echeance) : '-'}</td>
+                      <td className="p-4">
+                        <PaymentStatusBadge status={f.isEchu ? 'Impayé' : getPaymentStatus(f.montant, f.montantPaye)} />
+                      </td>
                     </tr>
                   ))}
                 </tbody>

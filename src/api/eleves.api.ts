@@ -1,12 +1,12 @@
 import api from './axios.config';
-import type { Eleve, CreateEleveRequest, Classe } from '@/types/eleve.types';
+import type { Eleve, EleveDossier, CreateEleveRequest, Classe } from '@/types/eleve.types';
 
 export const elevesApi = {
   getAll: async (): Promise<Eleve[]> => {
     const response = await api.get('/api/Eleves');
     return response.data;
   },
-  getById: async (id: string): Promise<Eleve> => {
+  getById: async (id: string): Promise<EleveDossier> => {
     const response = await api.get(`/api/Eleves/${id}`);
     return response.data;
   },

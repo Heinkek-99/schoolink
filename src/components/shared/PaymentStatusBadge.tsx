@@ -1,16 +1,13 @@
-import { getPaymentStatus } from '@/utils/constants';
-
 interface PaymentStatusBadgeProps {
-  due: number;
-  paid: number;
   status?: string;
 }
 
-export function PaymentStatusBadge({ due, paid, status }: PaymentStatusBadgeProps) {
-  const s = status || getPaymentStatus(due, paid);
+export function PaymentStatusBadge({ status }: PaymentStatusBadgeProps) {
+  const s = status || 'Inconnu';
 
   const classMap: Record<string, string> = {
     'À jour': 'status-badge-paid',
+    'Payé': 'status-badge-paid',
     'Partiel': 'status-badge-partial',
     'Impayé': 'status-badge-unpaid',
     'Actif': 'status-badge-active',

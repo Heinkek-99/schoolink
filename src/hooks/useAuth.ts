@@ -12,7 +12,15 @@ export function useLogin() {
   return useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: (data) => {
-      setAuth(data.user, data.token);
+      // API returns flat: { userId, username, nom, prenom, role, token }
+      const user = {
+        id: data.userId,
+        username: data.username,
+        nom: data.nom,
+        prenom: data.prenom,
+        role: data.role,
+      };
+      setAuth(user, data.token);
       toast.success('Connexion réussie');
       navigate('/');
     },

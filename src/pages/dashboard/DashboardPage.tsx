@@ -1,4 +1,4 @@
-import { Users, GraduationCap, Banknote, AlertTriangle, Plus, TrendingUp, TrendingDown } from 'lucide-react';
+import { Users, GraduationCap, Banknote, AlertTriangle, Plus, Percent } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -11,26 +11,15 @@ import { formatCurrency } from '@/utils/formatCurrency';
 
 const CHART_COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
-// Mock chart data (replace with API when available)
-const encaissementsMock = [
-  { mois: 'Oct', montant: 4500000 },
-  { mois: 'Nov', montant: 3800000 },
-  { mois: 'Déc', montant: 5200000 },
-  { mois: 'Jan', montant: 6100000 },
-  { mois: 'Fév', montant: 4900000 },
-  { mois: 'Mar', montant: 5800000 },
-];
-
-const repartitionMock = [
-  { statut: 'À jour', nombre: 120, pourcentage: 45 },
-  { statut: 'Partiel', nombre: 85, pourcentage: 32 },
-  { statut: 'Impayé', nombre: 60, pourcentage: 23 },
-];
-
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: impayes, isLoading: impayesLoading } = useFamillesImpayes();
+
+  // Build chart data from stats
+  const classeChartData = stats?.statistiquesParClasse
+    ?.filter((c) => c.nombreEleves > 0)
+    .map((c) => ({ nom: c.nomClasse, eleves: c.nombreEleves, taux: c.tauxRecouvrement })) || [];
 
   return (
     <div>
@@ -55,60 +44,59 @@ export default function DashboardPage() {
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
           <>
-            <KpiCard title="Total Élèves" value={stats?.totalEleves ?? 0} icon={GraduationCap} color="primary" trend="+12 ce mois" trendUp />
+            <KpiCard title="Total Élèves" value={stats?.totalEleves ?? 0} icon={GraduationCap} color="primary" />
             <KpiCard title="Total Familles" value={stats?.totalFamilles ?? 0} icon={Users} color="success" />
-            <KpiCard title="Encaissements" value={stats?.totalEncaissements ?? 0} icon={Banknote} color="warning" isCurrency trend={`Taux: ${stats?.tauxRecouvrement ?? 0}%`} trendUp />
-            <KpiCard title="Impayés" value={stats?.totalImpayes ?? 0} icon={AlertTriangle} color="destructive" isCurrency />
+            <KpiCard title="Encaissements" value={stats?.totalEncaisse ?? 0} icon={Banknote} color="warning" isCurrency />
+            <KpiCard title="Impayés" value={stats?.soldeGlobal ?? 0} icon={AlertTriangle} color="destructive" isCurrency />
           </>
         )}
       </div>
 
-      {/* Charts */}
+      {/* Taux de recouvrement + Classes chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Bar Chart */}
         <div className="lg:col-span-2 bg-card rounded-xl border shadow-sm p-5">
-          <h3 className="font-semibold text-foreground mb-4">Encaissements - 6 derniers mois</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={encaissementsMock}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" />
-              <XAxis dataKey="mois" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000000}M`} />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              <Bar dataKey="montant" fill="hsl(217,91%,60%)" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h3 className="font-semibold text-foreground mb-4">Effectifs par classe</h3>
+          {classeChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={classeChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" />
+                <XAxis dataKey="nom" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip />
+                <Bar dataKey="eleves" fill="hsl(217,91%,60%)" radius={[6, 6, 0, 0]} name="Élèves" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground text-sm">Aucune donnée de classe disponible</div>
+          )}
         </div>
 
-        {/* Pie Chart */}
         <div className="bg-card rounded-xl border shadow-sm p-5">
-          <h3 className="font-semibold text-foreground mb-4">Répartition des statuts</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={repartitionMock} dataKey="nombre" nameKey="statut" cx="50%" cy="50%" outerRadius={80} innerRadius={50}>
-                {repartitionMock.map((_, i) => (
-                  <Cell key={i} fill={CHART_COLORS[i]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="space-y-2 mt-3">
-            {repartitionMock.map((item, i) => (
-              <div key={item.statut} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[i] }} />
-                  <span className="text-muted-foreground">{item.statut}</span>
-                </div>
-                <span className="font-medium">{item.pourcentage}%</span>
-              </div>
-            ))}
+          <h3 className="font-semibold text-foreground mb-4">Résumé financier</h3>
+          <div className="space-y-4">
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Frais attendus</p>
+              <p className="text-lg font-bold text-foreground">{formatCurrency(stats?.totalFraisAttendus ?? 0)}</p>
+            </div>
+            <div className="p-3 bg-emerald-50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Total encaissé</p>
+              <p className="text-lg font-bold text-emerald-700">{formatCurrency(stats?.totalEncaisse ?? 0)}</p>
+            </div>
+            <div className="p-3 bg-red-50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Solde impayé</p>
+              <p className="text-lg font-bold text-red-700">{formatCurrency(stats?.soldeGlobal ?? 0)}</p>
+            </div>
+            <div className="p-3 bg-primary/5 rounded-lg">
+              <p className="text-sm text-muted-foreground">Taux de recouvrement</p>
+              <p className="text-lg font-bold text-primary">{stats?.tauxRecouvrement ?? 0}%</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Familles Impayées Table */}
       <div className="bg-card rounded-xl border shadow-sm p-5">
-        <h3 className="font-semibold text-foreground mb-4">Top 10 familles impayées</h3>
+        <h3 className="font-semibold text-foreground mb-4">Familles impayées</h3>
         {impayesLoading ? (
           <TableSkeleton rows={5} cols={5} />
         ) : !impayes?.length ? (
@@ -128,10 +116,10 @@ export default function DashboardPage() {
               <tbody className="divide-y">
                 {impayes.slice(0, 10).map((f) => (
                   <tr key={f.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="py-3 font-medium">{f.nom}</td>
+                    <td className="py-3 font-medium">{f.nomPere} {f.prenomPere}</td>
                     <td className="py-3">{f.nombreEnfants}</td>
-                    <td className="py-3">{formatCurrency(f.montantDu)}</td>
-                    <td className="py-3"><PaymentStatusBadge due={f.montantDu} paid={0} status={f.statut} /></td>
+                    <td className="py-3">{formatCurrency(f.totalDu)}</td>
+                    <td className="py-3"><PaymentStatusBadge status={f.statutPaiement} /></td>
                     <td className="py-3">
                       <button
                         onClick={() => navigate(`/familles/${f.id}`)}
