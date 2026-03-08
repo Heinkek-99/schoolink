@@ -14,7 +14,6 @@ const allNavItems = [
   { to: '/eleves', label: 'Élèves', icon: GraduationCap },
   { to: '/finances', label: 'Finances', icon: Banknote },
   { to: '/academique', label: 'Académique', icon: BookOpen },
-  { to: '/archives', label: 'Archives', icon: Archive },
   { to: '/parametres', label: 'Paramètres', icon: Settings },
 ];
 
