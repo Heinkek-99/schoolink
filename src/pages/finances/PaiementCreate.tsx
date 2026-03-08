@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -93,6 +94,7 @@ export default function PaiementCreate() {
   };
 
   const handleConfirm = () => {
+    const user = useAuthStore.getState().user;
     const ventilationsList = Object.entries(ventilations)
       .filter(([, v]) => v > 0)
       .map(([eleveId, montant]) => ({ eleveId, montant }));
@@ -104,8 +106,9 @@ export default function PaiementCreate() {
       datePaiement: isoDate,
       montantTotal: formValues.montant,
       modePaiement: MODE_PAIEMENT_MAP[formValues.mode] ?? 0,
-      reference: formValues.reference,
+      reference: formValues.reference || undefined,
       ventilations: ventilationsList,
+      enregistrePar: user?.id,
     };
     console.log('[PaiementCreate] payload:', JSON.stringify(payload, null, 2));
 
