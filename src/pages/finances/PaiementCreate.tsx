@@ -99,11 +99,14 @@ export default function PaiementCreate() {
         montant,
       }));
 
+    // Convert date to full ISO format for backend
+    const isoDate = new Date(values.date + 'T00:00:00').toISOString();
+
     createMutation.mutate(
       {
         familleId: selectedFamilleId!,
-        date: values.date,
-        montant: values.montant,
+        date: isoDate,
+        montant: Number(values.montant) || 0,
         mode: values.mode,
         reference: values.reference,
         ventilations: ventilationsList,
