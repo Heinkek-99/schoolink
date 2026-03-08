@@ -125,9 +125,9 @@ export default function FamillesPage() {
     const cleanData: Record<string, any> = {
       nomPere: data.nomPere,
       telephonePrincipal: data.telephonePrincipal,
-      telephonePere: data.telephonePrincipal,
     };
     if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.telephonePere) cleanData.telephonePere = data.telephonePere;
     if (data.emailPere) cleanData.emailPere = data.emailPere;
     if (data.nomMere) cleanData.nomMere = data.nomMere;
     if (data.prenomMere) cleanData.prenomMere = data.prenomMere;
