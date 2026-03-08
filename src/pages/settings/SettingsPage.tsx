@@ -233,10 +233,26 @@ export default function SettingsPage() {
           )}
 
           {activeSection === 'notifications' && (
-            <div className="bg-card rounded-xl border shadow-sm p-8 text-center text-muted-foreground">
-              <Bell size={48} strokeWidth={1} className="mx-auto mb-3" />
-              <p className="font-medium">Préférences de notification</p>
-              <p className="text-sm">Fonctionnalité à venir</p>
+            <div className="bg-card rounded-xl border shadow-sm p-6">
+              <h2 className="text-lg font-semibold mb-4">Historique des événements</h2>
+              {!notifications.length ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  <Bell size={48} strokeWidth={1} className="mx-auto mb-3 opacity-50" />
+                  <p>Aucune notification</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                  {notifications.map((n) => (
+                    <div key={n.id} className={`p-3 rounded-lg border text-sm ${!n.read ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'}`}>
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{n.title}</p>
+                        <span className="text-[11px] text-muted-foreground">{new Date(n.timestamp).toLocaleString('fr-FR')}</span>
+                      </div>
+                      <p className="text-muted-foreground text-xs mt-0.5">{n.message}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
