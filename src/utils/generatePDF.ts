@@ -619,28 +619,8 @@ export function generateBulletinFinancierPDF(data: {
   doc.setLineWidth(0.8);
   doc.rect(10, 10, pw - 20, 277);
 
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text(etab.nomEtablissement || 'SchoolFlow', pw / 2, 25, { align: 'center' });
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  const addr = [etab.adresse, etab.ville].filter(Boolean).join(', ');
-  if (addr) doc.text(addr, pw / 2, 31, { align: 'center' });
-  const contact = [etab.telephone ? `Tél: ${etab.telephone}` : '', etab.email ? `Email: ${etab.email}` : ''].filter(Boolean).join(' | ');
-  if (contact) doc.text(contact, pw / 2, 36, { align: 'center' });
-
-  doc.setDrawColor(30, 58, 95);
-  doc.setLineWidth(0.5);
-  doc.line(20, 40, pw - 20, 40);
-
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('BULLETIN FINANCIER', pw / 2, 50, { align: 'center' });
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Année scolaire : ${data.anneeScolaire}`, pw / 2, 56, { align: 'center' });
-
-  let y = 66;
+  let y = drawPdfHeader(doc, pw, etab, 'BULLETIN FINANCIER', `Année scolaire ${data.anneeScolaire}`);
+  y += 8;
   doc.setFontSize(10);
   const info = [
     ['Nom et prénom :', `${data.prenom} ${data.nom}`],
