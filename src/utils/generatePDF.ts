@@ -4,7 +4,109 @@ import { numberToWordsFr } from './numberToWords';
 // jsPDF's built-in fonts can't render non-breaking spaces (\u00A0) from Intl.NumberFormat
 // Replace them with regular spaces
 function fmtNum(n: number): string {
-  return new Intl.NumberFormat('fr-FR').format(n).replace(/\u00A0/g, ' ');
+  return new Intl.NumberFormat('fr-FR').format(Math.round(n)).replace(/[\u00A0\u202F\u2009]/g, ' ');
+}
+
+function getLogo(): string | null {
+  try { return localStorage.getItem('etablissement_logo'); } catch { return null; }
+}
+
+function drawCameroonFlag(doc: jsPDF, x: number, y: number, w: number, h: number) {
+  const sw = w / 3;
+  doc.setFillColor(0, 128, 0);
+  doc.rect(x, y, sw, h, 'F');
+  doc.setFillColor(206, 17, 38);
+  doc.rect(x + sw, y, sw, h, 'F');
+  doc.setFillColor(252, 209, 22);
+  doc.rect(x + sw * 2, y, sw, h, 'F');
+  // Star
+  const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) * 0.18;
+  doc.setFillColor(252, 209, 22);
+  drawStar(doc, cx, cy, r);
+}
+
+function drawStar(doc: jsPDF, cx: number, cy: number, r: number) {
+  const pts: [number, number][] = [];
+  for (let i = 0; i < 5; i++) {
+    const a1 = (i * 72 - 90) * Math.PI / 180;
+    pts.push([cx + r * Math.cos(a1), cy + r * Math.sin(a1)]);
+    const a2 = ((i * 72) + 36 - 90) * Math.PI / 180;
+    pts.push([cx + r * 0.4 * Math.cos(a2), cy + r * 0.4 * Math.sin(a2)]);
+  }
+  // Draw as filled polygon
+  const lines: number[][] = pts.map(p => [p[0], p[1]]);
+  if (lines.length > 0) {
+    doc.setFillColor(252, 209, 22);
+    // Use triangle fan approach
+    doc.triangle(lines[0][0], lines[0][1], lines[4][0], lines[4][1], lines[6][0], lines[6][1], 'F');
+    doc.triangle(lines[0][0], lines[0][1], lines[6][0], lines[6][1], lines[8][0], lines[8][1], 'F');
+    doc.triangle(lines[2][0], lines[2][1], lines[4][0], lines[4][1], lines[8][0], lines[8][1], 'F');
+  }
+}
+
+function drawPdfHeader(doc: jsPDF, pw: number, etab: any, title: string, subtitle?: string) {
+  const logo = getLogo();
+  let y = 20;
+  
+  // Flag top-left corner
+  drawCameroonFlag(doc, 15, 12, 18, 12);
+  
+  // Logo top-right
+  if (logo) {
+    try { doc.addImage(logo, 'PNG', pw - 33, 12, 18, 18); } catch {}
+  }
+  
+  // Header text centered
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 100, 0);
+  doc.text('RÉPUBLIQUE DU CAMEROUN', pw / 2, y, { align: 'center' });
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(100, 100, 100);
+  doc.text('Paix - Travail - Patrie', pw / 2, y + 4, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+  
+  doc.setDrawColor(0, 100, 0);
+  doc.setLineWidth(0.5);
+  doc.line(40, y + 7, pw - 40, y + 7);
+  
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 100, 0);
+  doc.text((etab.nomEtablissement || 'SCHOOLFLOW').toUpperCase(), pw / 2, y + 14, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+  
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  const addr = [etab.adresse, etab.ville].filter(Boolean).join(', ');
+  if (addr) doc.text(addr, pw / 2, y + 19, { align: 'center' });
+  const contact = [etab.telephone ? `Tel: ${etab.telephone}` : '', etab.email || ''].filter(Boolean).join(' | ');
+  if (contact) doc.text(contact, pw / 2, y + 23, { align: 'center' });
+  
+  if (etab.devise) {
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 100, 100);
+    doc.text(`"${etab.devise}"`, pw / 2, y + 27, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+  }
+  
+  // Title
+  const titleY = y + 35;
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 58, 95);
+  doc.text(title, pw / 2, titleY, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+  
+  if (subtitle) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(subtitle, pw / 2, titleY + 6, { align: 'center' });
+  }
+  
+  return titleY + (subtitle ? 12 : 6);
 }
 
 function getEtablissement() {
