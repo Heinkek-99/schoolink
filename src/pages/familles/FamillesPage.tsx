@@ -93,7 +93,7 @@ export default function FamillesPage() {
   const { data: familles, isLoading } = useFamilles(debouncedSearch || undefined);
   const createMutation = useCreateFamille();
   const deleteMutation = useDeleteFamille();
-  const { canCreate, canEdit, canDelete } = usePermissions();
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
