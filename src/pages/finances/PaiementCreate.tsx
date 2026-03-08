@@ -33,13 +33,14 @@ export default function PaiementCreate() {
   const [selectedFamilleId, setSelectedFamilleId] = useState<string | null>(null);
   const [familleSearch, setFamilleSearch] = useState('');
   const [ventilations, setVentilations] = useState<Record<string, number>>({});
+  const [formValues, setFormValues] = useState<PaiementForm>({ date: new Date().toISOString().split('T')[0], montant: 0, mode: '', reference: '' });
 
   // Fetch full famille detail when selected
   const { data: familleDetail } = useFamille(selectedFamilleId || '');
 
   const { register, handleSubmit, formState: { errors }, getValues } = useForm<PaiementForm>({
     resolver: zodResolver(paiementSchema),
-    defaultValues: { date: new Date().toISOString().split('T')[0] },
+    defaultValues: formValues,
   });
 
   const filteredFamilles = familles?.filter((f) =>
@@ -60,7 +61,8 @@ export default function PaiementCreate() {
     setStep(2);
   };
 
-  const onStep2Submit = () => {
+  const onStep2Submit = (data: PaiementForm) => {
+    setFormValues(data);
     setStep(3);
     // Initialize ventilations from detail
     if (familleDetail?.enfants) {
@@ -72,7 +74,7 @@ export default function PaiementCreate() {
 
   const autoDistribute = () => {
     if (!familleDetail?.enfants) return;
-    const montant = getValues('montant');
+    const montant = formValues.montant;
     const totalDue = familleDetail.enfants.reduce((a, e) => a + e.solde, 0);
     const newV: Record<string, number> = {};
     let remaining = montant;
@@ -90,7 +92,6 @@ export default function PaiementCreate() {
   };
 
   const handleConfirm = () => {
-    const values = getValues();
     const ventilationsList = Object.entries(ventilations)
       .filter(([, v]) => v > 0)
       .map(([eleveId, montant]) => ({
@@ -99,16 +100,15 @@ export default function PaiementCreate() {
         montant,
       }));
 
-    // Convert date to full ISO format for backend
-    const isoDate = new Date(values.date + 'T00:00:00').toISOString();
+    const isoDate = new Date(formValues.date + 'T00:00:00').toISOString();
 
     createMutation.mutate(
       {
         familleId: selectedFamilleId!,
         date: isoDate,
-        montant: Number(values.montant) || 0,
-        mode: values.mode,
-        reference: values.reference,
+        montant: formValues.montant,
+        mode: formValues.mode,
+        reference: formValues.reference,
         ventilations: ventilationsList,
       },
       {
@@ -116,14 +116,14 @@ export default function PaiementCreate() {
           addNotification({
             type: 'paiement',
             title: 'Paiement enregistré',
-            message: `${formatCurrency(values.montant)} reçu de ${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
+            message: `${formatCurrency(formValues.montant)} reçu de ${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
           });
           generateReceiptPDF({
             familleNom: `${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
-            date: values.date,
-            montant: values.montant,
-            mode: values.mode,
-            reference: values.reference,
+            date: formValues.date,
+            montant: formValues.montant,
+            mode: formValues.mode,
+            reference: formValues.reference,
             ventilations: ventilationsList,
           });
           navigate('/finances');
@@ -261,8 +261,8 @@ export default function PaiementCreate() {
 
           <div className="mt-4 p-3 bg-muted/50 rounded-lg flex items-center justify-between">
             <span className="text-sm font-medium">Reste à ventiler:</span>
-            <span className={`font-bold ${getValues('montant') - totalVentile === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-              {formatCurrency(getValues('montant') - totalVentile)}
+            <span className={`font-bold ${formValues.montant - totalVentile === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+              {formatCurrency(formValues.montant - totalVentile)}
             </span>
           </div>
 
@@ -270,7 +270,7 @@ export default function PaiementCreate() {
             <button onClick={() => setStep(2)} className="px-6 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">Précédent</button>
             <button
               onClick={() => setStep(4)}
-              disabled={getValues('montant') !== totalVentile}
+              disabled={formValues.montant !== totalVentile}
               className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               Suivant <ArrowRight size={16} />
@@ -285,10 +285,10 @@ export default function PaiementCreate() {
           <h2 className="text-lg font-semibold mb-4">Confirmation</h2>
           <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
             <p><span className="text-muted-foreground">Famille:</span> <strong>{familleDetail?.nomPere} {familleDetail?.prenomPere}</strong></p>
-            <p><span className="text-muted-foreground">Date:</span> <strong>{getValues('date')}</strong></p>
-            <p><span className="text-muted-foreground">Montant:</span> <strong>{formatCurrency(getValues('montant'))}</strong></p>
-            <p><span className="text-muted-foreground">Mode:</span> <strong>{getValues('mode')}</strong></p>
-            {getValues('reference') && <p><span className="text-muted-foreground">Référence:</span> <strong>{getValues('reference')}</strong></p>}
+            <p><span className="text-muted-foreground">Date:</span> <strong>{formValues.date}</strong></p>
+            <p><span className="text-muted-foreground">Montant:</span> <strong>{formatCurrency(formValues.montant)}</strong></p>
+            <p><span className="text-muted-foreground">Mode:</span> <strong>{formValues.mode}</strong></p>
+            {formValues.reference && <p><span className="text-muted-foreground">Référence:</span> <strong>{formValues.reference}</strong></p>}
             <hr className="my-3" />
             <p className="font-medium">Ventilation:</p>
             {familleDetail?.enfants?.filter((e) => ventilations[e.id] > 0).map((e) => (
