@@ -62,8 +62,8 @@ export default function EleveDetail() {
     );
   };
 
-  const handleArchive = () => {
-    archiveMutation.mutate(id!, {
+  const handleDelete = () => {
+    deleteMutation.mutate(id!, {
       onSuccess: () => navigate('/eleves'),
     });
   };
