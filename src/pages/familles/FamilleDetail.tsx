@@ -35,6 +35,7 @@ export default function FamilleDetail() {
   const { data: famille, isLoading } = useFamille(id!);
   const { data: paiements } = usePaiementsByFamille(id!);
   const updateMutation = useUpdateFamille();
+  const { canEdit } = usePermissions();
   const [activeTab, setActiveTab] = useState<'enfants' | 'paiements' | 'informations'>('enfants');
   const [isEditing, setIsEditing] = useState(false);
 
