@@ -162,18 +162,27 @@ export default function ElevesPage() {
       <PageHeader title="Élèves" subtitle={`${eleves?.length ?? 0} élèves inscrits`}>
         <div className="flex items-center gap-2">
           {filtered && filtered.length > 0 && (
-            <button
-              onClick={() => generateAllStudentCardsPDF(filtered.map((e) => ({
-                nom: e.nom,
-                prenom: e.prenom,
-                matricule: e.matricule,
-                classe: e.classe || '',
-                anneeScolaire,
-              })))}
-              className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
-            >
-              <Printer size={18} /> Imprimer les cartes
-            </button>
+            <>
+              <button
+                onClick={handleExportCSV}
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 disabled:opacity-50 transition-colors"
+              >
+                <Download size={18} /> {exporting ? 'Export...' : 'Exporter CSV'}
+              </button>
+              <button
+                onClick={() => generateAllStudentCardsPDF(filtered.map((e) => ({
+                  nom: e.nom,
+                  prenom: e.prenom,
+                  matricule: e.matricule,
+                  classe: e.classe || '',
+                  anneeScolaire,
+                })))}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+              >
+                <Printer size={18} /> Imprimer les cartes
+              </button>
+            </>
           )}
           {canCreate('eleves') && (
             <button
