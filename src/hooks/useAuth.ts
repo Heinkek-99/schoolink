@@ -17,7 +17,7 @@ export function useLogin() {
       navigate('/');
     },
     onError: () => {
-      toast.error('Email ou mot de passe incorrect');
+      toast.error("Nom d'utilisateur ou mot de passe incorrect");
     },
   });
 }
