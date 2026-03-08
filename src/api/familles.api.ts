@@ -6,6 +6,10 @@ export const famillesApi = {
     const response = await api.get('/api/Familles');
     return response.data;
   },
+  search: async (query: string): Promise<Famille[]> => {
+    const response = await api.get('/api/Familles/search', { params: { query } });
+    return response.data;
+  },
   getById: async (id: string): Promise<FamilleDetail> => {
     const response = await api.get(`/api/Familles/${id}`);
     return response.data;
