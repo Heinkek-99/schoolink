@@ -66,7 +66,7 @@ export default function EleveCreate() {
   };
 
   const handleCreateFamille = (data: NewFamilleForm) => {
-    createFamilleMutation.mutate(data, {
+    createFamilleMutation.mutate(data as any, {
       onSuccess: (newFamille) => {
         form2.setValue('familleId', newFamille.id);
         setShowNewFamille(false);

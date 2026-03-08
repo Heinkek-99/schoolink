@@ -46,7 +46,7 @@ export default function FamillesPage() {
   });
 
   const onSubmit = (data: FamilleForm) => {
-    createMutation.mutate(data, {
+    createMutation.mutate(data as any, {
       onSuccess: () => {
         setShowModal(false);
         reset();

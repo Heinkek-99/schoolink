@@ -60,7 +60,7 @@ export default function FamilleDetail() {
 
   const onSave = (data: EditFamilleForm) => {
     updateMutation.mutate(
-      { id: id!, ...data },
+      { id: id!, ...data } as any,
       { onSuccess: () => setIsEditing(false) }
     );
   };
