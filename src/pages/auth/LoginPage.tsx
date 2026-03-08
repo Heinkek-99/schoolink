@@ -21,7 +21,7 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginForm) => loginMutation.mutate(data);
+  const onSubmit = (data: LoginForm) => loginMutation.mutate({ email: data.email, password: data.password });
 
   return (
     <div className="min-h-screen flex">

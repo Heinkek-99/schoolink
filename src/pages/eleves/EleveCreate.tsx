@@ -55,7 +55,7 @@ export default function EleveCreate() {
     if (!step1Data) return;
     const step2Values = form2.getValues();
     createMutation.mutate(
-      { ...step1Data, ...step2Values },
+      { nom: step1Data.nom, prenom: step1Data.prenom, dateNaissance: step1Data.dateNaissance, lieuNaissance: step1Data.lieuNaissance, sexe: step1Data.sexe, classeId: step2Values.classeId, familleId: step2Values.familleId },
       { onSuccess: () => navigate('/eleves') }
     );
   };

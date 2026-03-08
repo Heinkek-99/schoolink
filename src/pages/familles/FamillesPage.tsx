@@ -44,7 +44,7 @@ export default function FamillesPage() {
   });
 
   const onSubmit = (data: FamilleForm) => {
-    createMutation.mutate(data, {
+    createMutation.mutate({ nom: data.nom, prenom: data.prenom, telephone: data.telephone, email: data.email, adresse: data.adresse, ville: data.ville }, {
       onSuccess: () => {
         setShowModal(false);
         reset();
