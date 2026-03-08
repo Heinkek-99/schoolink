@@ -229,7 +229,7 @@ export default function FamilleDetail() {
             <>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Informations de la famille</h3>
-                <button onClick={startEditing} className="text-sm text-primary hover:underline">Modifier</button>
+                {canEdit('familles') && <button onClick={startEditing} className="text-sm text-primary hover:underline">Modifier</button>}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div><span className="text-muted-foreground">Nom du père:</span> <strong>{famille.nomPere}</strong></div>
