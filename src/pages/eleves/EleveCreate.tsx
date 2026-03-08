@@ -108,16 +108,18 @@ export default function EleveCreate() {
     const step2Values = form2.getValues();
     // API expects Sexe as numeric enum: 0 = Masculin, 1 = Feminin
     const sexeValue = step1Data.sexe === 'M' ? 0 : 1;
+    const payload = {
+      nom: step1Data.nom,
+      prenom: step1Data.prenom,
+      dateNaissance: step1Data.dateNaissance,
+      lieuNaissance: step1Data.lieuNaissance,
+      sexe: sexeValue as any,
+      classeId: step2Values.classeId,
+      familleId: step2Values.familleId,
+    };
+    console.log('[CreateEleve] Sending:', payload);
     createMutation.mutate(
-      {
-        nom: step1Data.nom,
-        prenom: step1Data.prenom,
-        dateNaissance: step1Data.dateNaissance,
-        lieuNaissance: step1Data.lieuNaissance,
-        sexe: sexeValue as any,
-        classeId: step2Values.classeId,
-        familleId: step2Values.familleId,
-      },
+      payload,
       { onSuccess: () => {
         addNotification({ type: 'inscription', title: 'Nouvelle inscription', message: `${step1Data.prenom} ${step1Data.nom} inscrit(e) avec succès` });
         navigate('/eleves');
