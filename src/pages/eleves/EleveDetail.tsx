@@ -67,8 +67,20 @@ export default function EleveDetail() {
         contactUrgence: eleve.contactUrgence || '',
         remarques: eleve.remarques || '',
       });
+      setEditPhoto(null);
+      setEditPhotoPreview(photoUrl);
     }
     setIsEditing(true);
+  };
+
+  const handleEditPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditPhoto(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setEditPhotoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
   const onSave = (data: EditEleveForm) => {
