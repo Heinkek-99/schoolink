@@ -9,6 +9,7 @@ import { usePaiementsByFamille } from '@/hooks/usePaiements';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { KpiSkeleton } from '@/components/shared/Skeletons';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { getRecoveryRate } from '@/utils/constants';
