@@ -180,6 +180,25 @@ export default function EleveDetail() {
           <div className="bg-card rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">Modifier l'élève</h2>
             <form onSubmit={editForm.handleSubmit(onSave)} className="space-y-4">
+              {/* Photo upload */}
+              <div className="flex items-center gap-4">
+                <div
+                  onClick={() => photoInputRef.current?.click()}
+                  className="relative h-20 w-20 rounded-full bg-muted flex items-center justify-center cursor-pointer border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors overflow-hidden"
+                >
+                  {editPhotoPreview ? (
+                    <img src={editPhotoPreview} alt="Photo" className="h-full w-full object-cover" />
+                  ) : (
+                    <Upload size={24} className="text-muted-foreground" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Photo de l'élève</p>
+                  <p className="text-xs text-muted-foreground">Cliquez pour modifier la photo</p>
+                </div>
+                <input ref={photoInputRef} type="file" accept="image/*" onChange={handleEditPhotoChange} className="hidden" />
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Nom *</label>
