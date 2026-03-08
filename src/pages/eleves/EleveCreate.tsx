@@ -29,6 +29,7 @@ const newFamilleSchema = z.object({
   prenomPere: z.string().default(''),
   telephonePrincipal: z.string().min(1, 'Téléphone requis'),
   emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
+  nomMere: z.string().optional(),
   adresse: z.string().optional(),
   ville: z.string().optional(),
 });
@@ -42,6 +43,7 @@ export default function EleveCreate() {
   const [step, setStep] = useState(1);
   const [step1Data, setStep1Data] = useState<Step1 | null>(null);
   const [showNewFamille, setShowNewFamille] = useState(false);
+  const [createdFamilleLabel, setCreatedFamilleLabel] = useState('');
   const { data: classes, isLoading: classesLoading } = useClasses();
   const { data: familles, isLoading: famillesLoading } = useFamilles();
   const createMutation = useCreateEleve();
@@ -70,10 +72,15 @@ export default function EleveCreate() {
 
   const handleCreateFamille = (data: NewFamilleForm) => {
     createFamilleMutation.mutate(data as any, {
-      onSuccess: (newFamille) => {
-        form2.setValue('familleId', newFamille.id);
-        setShowNewFamille(false);
-        formFamille.reset();
+      onSuccess: (newFamille: any) => {
+        // The API may return the id directly or as an object
+        const familleId = typeof newFamille === 'string' ? newFamille : newFamille?.id;
+        if (familleId) {
+          form2.setValue('familleId', familleId);
+          setCreatedFamilleLabel(`${data.nomPere} ${data.prenomPere || ''} — ${data.telephonePrincipal}`);
+          setShowNewFamille(false);
+          formFamille.reset();
+        }
       },
     });
   };
@@ -98,7 +105,8 @@ export default function EleveCreate() {
     );
   };
 
-  const selectedFamille = familles?.find((f) => f.id === form2.watch('familleId'));
+  const watchedFamilleId = form2.watch('familleId');
+  const selectedFamille = familles?.find((f) => f.id === watchedFamilleId);
   const selectedClasse = classes?.find((c) => c.id === form2.watch('classeId'));
 
   return (
@@ -191,6 +199,7 @@ export default function EleveCreate() {
                     <div>
                       <label className="text-xs font-medium mb-1 block">Nom du père *</label>
                       <input {...formFamille.register('nomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      {formFamille.formState.errors.nomPere && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.nomPere.message}</p>}
                     </div>
                     <div>
                       <label className="text-xs font-medium mb-1 block">Prénom du père</label>
@@ -198,8 +207,9 @@ export default function EleveCreate() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium mb-1 block">Téléphone *</label>
+                    <label className="text-xs font-medium mb-1 block">Téléphone principal *</label>
                     <input {...formFamille.register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                    {formFamille.formState.errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.telephonePrincipal.message}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -240,13 +250,21 @@ export default function EleveCreate() {
                     </select>
                   )}
                   {form2.formState.errors.familleId && <p className="text-xs text-destructive mt-1">{form2.formState.errors.familleId.message}</p>}
-                  {selectedFamille && (
-                    <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
+                </>
+              )}
+
+              {/* Show selected famille info */}
+              {watchedFamilleId && (selectedFamille || createdFamilleLabel) && (
+                <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
+                  {selectedFamille ? (
+                    <>
                       <p className="font-medium">{selectedFamille.nomPere} {selectedFamille.prenomPere}</p>
                       <p className="text-muted-foreground text-xs">{selectedFamille.telephonePrincipal} · {selectedFamille.nombreEnfants} enfant(s)</p>
-                    </div>
+                    </>
+                  ) : (
+                    <p className="font-medium text-primary">✓ Nouvelle famille créée : {createdFamilleLabel}</p>
                   )}
-                </>
+                </div>
               )}
             </div>
 
@@ -291,7 +309,7 @@ export default function EleveCreate() {
             <p><span className="text-muted-foreground">Date de naissance:</span> <strong>{step1Data?.dateNaissance}</strong></p>
             <p><span className="text-muted-foreground">Lieu:</span> <strong>{step1Data?.lieuNaissance}</strong></p>
             <p><span className="text-muted-foreground">Sexe:</span> <strong>{step1Data?.sexe === 'M' ? 'Masculin' : 'Féminin'}</strong></p>
-            <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille?.nomPere} {selectedFamille?.prenomPere}</strong></p>
+            <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille ? `${selectedFamille.nomPere} ${selectedFamille.prenomPere}` : createdFamilleLabel || '-'}</strong></p>
             <p><span className="text-muted-foreground">Classe:</span> <strong>{selectedClasse?.nom || '-'}</strong></p>
             <p><span className="text-muted-foreground">Année scolaire:</span> <strong>{anneeScolaire}</strong></p>
           </div>
@@ -302,7 +320,7 @@ export default function EleveCreate() {
             <button
               onClick={handleConfirm}
               disabled={createMutation.isPending}
-              className="flex items-center gap-2 px-6 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               <Check size={16} /> {createMutation.isPending ? 'Inscription...' : "Confirmer l'inscription"}
             </button>

@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Phone, Mail, MapPin, Save } from 'lucide-react';
-import { useFamille, useUpdateFamille } from '@/hooks/useFamilles';
+import { ArrowLeft, Phone, Mail, MapPin, Save, Trash2, Banknote, Percent } from 'lucide-react';
+import { useFamille, useUpdateFamille, useDeleteFamille } from '@/hooks/useFamilles';
 import { usePaiementsByFamille } from '@/hooks/usePaiements';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
@@ -13,7 +13,6 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { getRecoveryRate } from '@/utils/constants';
-import { Banknote, Percent } from 'lucide-react';
 
 const editFamilleSchema = z.object({
   nomPere: z.string().min(1, 'Nom requis'),
@@ -35,9 +34,11 @@ export default function FamilleDetail() {
   const { data: famille, isLoading } = useFamille(id!);
   const { data: paiements } = usePaiementsByFamille(id!);
   const updateMutation = useUpdateFamille();
-  const { canEdit } = usePermissions();
+  const deleteMutation = useDeleteFamille();
+  const { canEdit, canDelete } = usePermissions();
   const [activeTab, setActiveTab] = useState<'enfants' | 'paiements' | 'informations'>('enfants');
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const editForm = useForm<EditFamilleForm>({
     resolver: zodResolver(editFamilleSchema),
@@ -65,6 +66,12 @@ export default function FamilleDetail() {
       { id: id!, ...data } as any,
       { onSuccess: () => setIsEditing(false) }
     );
+  };
+
+  const handleDelete = () => {
+    deleteMutation.mutate(id!, {
+      onSuccess: () => navigate('/familles'),
+    });
   };
 
   if (isLoading) {
@@ -101,8 +108,41 @@ export default function FamilleDetail() {
               {famille.ville && <span className="flex items-center gap-1"><MapPin size={14} /> {famille.ville}</span>}
             </div>
           </div>
+          {canDelete('familles') && (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 size={16} /> Supprimer
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="bg-card rounded-xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cette famille ?</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Cette action est irréversible. La famille <strong>{famille.nomPere} {famille.prenomPere}</strong> 
+              {famille.enfants?.length > 0 && ` et ses ${famille.enfants.length} enfant(s) associé(s)`} seront supprimés.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+                Annuler
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="flex-1 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
+              >
+                {deleteMutation.isPending ? 'Suppression...' : 'Confirmer la suppression'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <KpiCard title="Total dû" value={famille.totalDu} icon={Banknote} isCurrency color="destructive" />

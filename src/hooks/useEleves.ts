@@ -35,6 +35,20 @@ export function useCreateEleve() {
       qc.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Élève inscrit avec succès');
     },
-    onError: () => toast.error("Erreur lors de l'inscription"),
+    onError: (err: any) => toast.error(err?.message || "Erreur lors de l'inscription"),
+  });
+}
+
+export function useDeleteEleve() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => elevesApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['eleves'] });
+      qc.invalidateQueries({ queryKey: ['familles'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Élève supprimé');
+    },
+    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la suppression'),
   });
 }
