@@ -24,7 +24,6 @@ export function Sidebar() {
   const { allowedNavItems, isAdmin } = usePermissions();
 
   const navItems = allNavItems.filter((item) => {
-    if (item.to === '/archives') return isAdmin;
     return allowedNavItems.includes(item.to);
   });
 
