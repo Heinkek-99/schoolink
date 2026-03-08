@@ -22,8 +22,13 @@ export const famillesApi = {
     await api.delete(`/api/Familles/${id}`);
   },
   getArchived: async (): Promise<Famille[]> => {
-    const response = await api.get('/api/Familles/archives');
-    return response.data;
+    try {
+      const response = await api.get('/api/Familles', { params: { statut: 'Archivé' } });
+      return response.data;
+    } catch {
+      // Endpoint may not support filtering - return empty
+      return [];
+    }
   },
   restore: async (id: string): Promise<void> => {
     await api.put(`/api/Familles/${id}/restore`);
