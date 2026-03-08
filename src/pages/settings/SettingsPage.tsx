@@ -84,9 +84,9 @@ export default function SettingsPage() {
 
   const sections = [
     { key: 'etablissement' as const, label: 'Établissement', desc: "Informations de l'école", icon: School },
-    { key: 'typefrais' as const, label: 'Types de frais', desc: 'Gérer les frais scolaires', icon: CreditCard },
-    { key: 'utilisateurs' as const, label: 'Utilisateurs', desc: 'Gestion des comptes', icon: Users },
-    { key: 'notifications' as const, label: 'Notifications', desc: 'Préférences de notification', icon: Bell },
+    ...(canCreate('typefrais') || isAdmin ? [{ key: 'typefrais' as const, label: 'Types de frais', desc: 'Gérer les frais scolaires', icon: CreditCard }] : []),
+    ...(isAdmin ? [{ key: 'utilisateurs' as const, label: 'Utilisateurs', desc: 'Gestion des comptes', icon: Users }] : []),
+    { key: 'notifications' as const, label: 'Notifications', desc: 'Historique des événements', icon: Bell },
   ];
 
   return (
