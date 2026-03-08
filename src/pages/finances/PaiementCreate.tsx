@@ -95,23 +95,18 @@ export default function PaiementCreate() {
   const handleConfirm = () => {
     const ventilationsList = Object.entries(ventilations)
       .filter(([, v]) => v > 0)
-      .map(([eleveId, montant]) => ({
-        eleveId,
-        eleveNom: familleDetail?.enfants?.find((e) => e.id === eleveId)?.prenom || '',
-        montant,
-      }));
+      .map(([eleveId, montant]) => ({ eleveId, montant }));
 
     const isoDate = new Date(formValues.date + 'T00:00:00').toISOString();
 
     const payload = {
       familleId: selectedFamilleId!,
-      date: isoDate,
-      montant: formValues.montant,
-      mode: formValues.mode,
+      datePaiement: isoDate,
+      montantTotal: formValues.montant,
+      modePaiement: MODE_PAIEMENT_MAP[formValues.mode] ?? 0,
       reference: formValues.reference,
       ventilations: ventilationsList,
     };
-    console.log('[PaiementCreate] formValues:', formValues);
     console.log('[PaiementCreate] payload:', JSON.stringify(payload, null, 2));
 
     createMutation.mutate(
