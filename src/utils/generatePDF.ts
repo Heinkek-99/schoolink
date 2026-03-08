@@ -1,6 +1,12 @@
 import jsPDF from 'jspdf';
 import { numberToWordsFr } from './numberToWords';
 
+// jsPDF's built-in fonts can't render non-breaking spaces (\u00A0) from Intl.NumberFormat
+// Replace them with regular spaces
+function fmtNum(n: number): string {
+  return new Intl.NumberFormat('fr-FR').format(n).replace(/\u00A0/g, ' ');
+}
+
 function getEtablissement() {
   try {
     const saved = localStorage.getItem('etablissement');
