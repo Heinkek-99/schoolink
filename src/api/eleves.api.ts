@@ -11,7 +11,28 @@ export const elevesApi = {
     return response.data;
   },
   create: async (data: CreateEleveRequest): Promise<Eleve> => {
-    const response = await api.post('/api/Eleves', data);
+    if (data.photo) {
+      const formData = new FormData();
+      formData.append('nom', data.nom);
+      formData.append('prenom', data.prenom);
+      formData.append('dateNaissance', data.dateNaissance);
+      formData.append('lieuNaissance', data.lieuNaissance);
+      formData.append('sexe', String(data.sexe));
+      formData.append('classeId', data.classeId);
+      formData.append('familleId', data.familleId);
+      if (data.nationalite) formData.append('nationalite', data.nationalite);
+      if (data.groupeSanguin) formData.append('groupeSanguin', data.groupeSanguin);
+      if (data.allergies) formData.append('allergies', data.allergies);
+      if (data.contactUrgence) formData.append('contactUrgence', data.contactUrgence);
+      if (data.remarques) formData.append('remarques', data.remarques);
+      formData.append('photo', data.photo);
+      const response = await api.post('/api/Eleves', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    }
+    const { photo, ...jsonData } = data;
+    const response = await api.post('/api/Eleves', jsonData);
     return response.data;
   },
   update: async (id: string, data: UpdateEleveRequest): Promise<EleveDossier> => {
