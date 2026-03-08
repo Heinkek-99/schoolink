@@ -113,14 +113,30 @@ export default function ElevesPage() {
   return (
     <div>
       <PageHeader title="Élèves" subtitle={`${eleves?.length ?? 0} élèves inscrits`}>
-        {canCreate('eleves') && (
-          <button
-            onClick={() => navigate('/eleves/nouveau')}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            <Plus size={18} /> Nouvelle inscription
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {filtered && filtered.length > 0 && (
+            <button
+              onClick={() => generateAllStudentCardsPDF(filtered.map((e) => ({
+                nom: e.nom,
+                prenom: e.prenom,
+                matricule: e.matricule,
+                classe: e.classe || '',
+                anneeScolaire,
+              })))}
+              className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+            >
+              <Printer size={18} /> Imprimer les cartes
+            </button>
+          )}
+          {canCreate('eleves') && (
+            <button
+              onClick={() => navigate('/eleves/nouveau')}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              <Plus size={18} /> Nouvelle inscription
+            </button>
+          )}
+        </div>
       </PageHeader>
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
