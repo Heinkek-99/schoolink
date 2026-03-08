@@ -3,10 +3,10 @@ import { famillesApi } from '@/api/familles.api';
 import type { CreateFamilleRequest, UpdateFamilleRequest } from '@/types/famille.types';
 import toast from 'react-hot-toast';
 
-export function useFamilles() {
+export function useFamilles(searchQuery?: string) {
   return useQuery({
-    queryKey: ['familles'],
-    queryFn: famillesApi.getAll,
+    queryKey: ['familles', searchQuery || ''],
+    queryFn: () => searchQuery ? famillesApi.search(searchQuery) : famillesApi.getAll(),
   });
 }
 
