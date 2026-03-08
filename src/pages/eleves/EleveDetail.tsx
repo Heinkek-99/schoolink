@@ -85,8 +85,8 @@ export default function EleveDetail() {
 
   const onSave = (data: EditEleveForm) => {
     updateMutation.mutate(
-      { id: id!, data: { nom: data.nom, prenom: data.prenom, dateNaissance: data.dateNaissance, lieuNaissance: data.lieuNaissance, sexe: data.sexe, nationalite: data.nationalite, groupeSanguin: data.groupeSanguin, allergies: data.allergies, contactUrgence: data.contactUrgence, remarques: data.remarques } },
-      { onSuccess: () => setIsEditing(false) }
+      { id: id!, data: { nom: data.nom, prenom: data.prenom, dateNaissance: data.dateNaissance, lieuNaissance: data.lieuNaissance, sexe: data.sexe, nationalite: data.nationalite, groupeSanguin: data.groupeSanguin, allergies: data.allergies, contactUrgence: data.contactUrgence, remarques: data.remarques, photo: editPhoto || undefined } },
+      { onSuccess: () => { setIsEditing(false); setEditPhoto(null); setEditPhotoPreview(null); } }
     );
   };
 
