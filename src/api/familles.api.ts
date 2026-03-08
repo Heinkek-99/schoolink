@@ -18,4 +18,7 @@ export const famillesApi = {
     const response = await api.put(`/api/Familles/${data.id}`, data);
     return response.data;
   },
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/api/Familles/${id}`);
+  },
 };

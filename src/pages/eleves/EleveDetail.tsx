@@ -1,13 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { ArrowLeft, CreditCard, FileText, BarChart3, ClipboardList, Download } from 'lucide-react';
-import { useEleve } from '@/hooks/useEleves';
+import { ArrowLeft, CreditCard, FileText, BarChart3, ClipboardList, Download, Trash2, Banknote } from 'lucide-react';
+import { useEleve, useDeleteEleve } from '@/hooks/useEleves';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { KpiSkeleton } from '@/components/shared/Skeletons';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
-import { Banknote } from 'lucide-react';
 import { generateStudentCardPDF } from '@/utils/generatePDF';
 import { getPaymentStatus } from '@/utils/constants';
 import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
@@ -16,8 +16,17 @@ export default function EleveDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: eleve, isLoading } = useEleve(id!);
+  const deleteMutation = useDeleteEleve();
+  const { canDelete } = usePermissions();
   const [activeTab, setActiveTab] = useState<'informations' | 'finances' | 'notes' | 'documents'>('informations');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
+
+  const handleDelete = () => {
+    deleteMutation.mutate(id!, {
+      onSuccess: () => navigate('/eleves'),
+    });
+  };
 
   if (isLoading) return <div className="grid grid-cols-3 gap-4">{Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)}</div>;
   if (!eleve) return <div className="text-center py-16 text-muted-foreground">Élève non trouvé</div>;
@@ -35,21 +44,54 @@ export default function EleveDetail() {
         <ArrowLeft size={18} /> Retour aux élèves
       </button>
 
-      {/* Header Card */}
       <div className="bg-card rounded-xl border shadow-sm p-6 mb-6">
-        <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
-            {eleve.prenom[0]}{eleve.nom[0]}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
+              {eleve.prenom[0]}{eleve.nom[0]}
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">{eleve.prenom} {eleve.nom}</h1>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="status-badge-active font-mono">{eleve.matricule}</span>
+                <span className="text-sm text-muted-foreground">{eleve.classe || '-'}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{eleve.prenom} {eleve.nom}</h1>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="status-badge-active font-mono">{eleve.matricule}</span>
-              <span className="text-sm text-muted-foreground">{eleve.classe || '-'}</span>
+          {canDelete('eleves') && (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 size={16} /> Supprimer
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="bg-card rounded-xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cet élève ?</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Cette action est irréversible. L'élève <strong>{eleve.prenom} {eleve.nom}</strong> ({eleve.matricule}) sera supprimé définitivement.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+                Annuler
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="flex-1 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
+              >
+                {deleteMutation.isPending ? 'Suppression...' : 'Confirmer'}
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 border-b mb-6">

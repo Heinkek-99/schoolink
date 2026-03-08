@@ -26,7 +26,7 @@ export function useCreateFamille() {
       qc.invalidateQueries({ queryKey: ['familles'] });
       toast.success('Famille créée avec succès');
     },
-    onError: () => toast.error('Erreur lors de la création'),
+    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la création'),
   });
 }
 
@@ -34,10 +34,24 @@ export function useUpdateFamille() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateFamilleRequest) => famillesApi.update(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['familles'] });
+      qc.invalidateQueries({ queryKey: ['familles', variables.id] });
       toast.success('Famille mise à jour');
     },
-    onError: () => toast.error('Erreur lors de la mise à jour'),
+    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la mise à jour'),
+  });
+}
+
+export function useDeleteFamille() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => famillesApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['familles'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Famille supprimée');
+    },
+    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la suppression'),
   });
 }

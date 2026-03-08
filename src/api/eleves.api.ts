@@ -18,4 +18,7 @@ export const elevesApi = {
     const response = await api.get('/api/Classes');
     return response.data;
   },
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/api/Eleves/${id}`);
+  },
 };
