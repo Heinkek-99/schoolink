@@ -88,13 +88,15 @@ export default function EleveCreate() {
   const handleConfirm = () => {
     if (!step1Data) return;
     const step2Values = form2.getValues();
+    // API expects Sexe as numeric enum: 0 = Masculin, 1 = Feminin
+    const sexeValue = step1Data.sexe === 'M' ? 0 : 1;
     createMutation.mutate(
       {
         nom: step1Data.nom,
         prenom: step1Data.prenom,
         dateNaissance: step1Data.dateNaissance,
         lieuNaissance: step1Data.lieuNaissance,
-        sexe: step1Data.sexe,
+        sexe: sexeValue as any,
         classeId: step2Values.classeId,
         familleId: step2Values.familleId,
       },
