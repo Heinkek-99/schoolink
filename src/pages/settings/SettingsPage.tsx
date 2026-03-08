@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { School, CreditCard, Users, Bell, Plus, Save } from 'lucide-react';
+import { School, CreditCard, Users, Bell, Plus, Save, Upload, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -37,6 +37,8 @@ export default function SettingsPage() {
   const { canCreate, canEdit, isAdmin, isDirecteur } = usePermissions();
   const notifications = useNotificationStore((s) => s.notifications);
   const [showNewTypeFrais, setShowNewTypeFrais] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const etabForm = useForm<EtablissementForm>({
     resolver: zodResolver(etablissementSchema),
@@ -63,10 +65,41 @@ export default function SettingsPage() {
         etabForm.reset(JSON.parse(saved));
       } catch {}
     }
+    const savedLogo = localStorage.getItem('etablissement_logo');
+    if (savedLogo) setLogoPreview(savedLogo);
   }, []);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 500_000) {
+        toast.error('Le logo ne doit pas dépasser 500 Ko');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setLogoPreview(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setLogoPreview(null);
+    localStorage.removeItem('etablissement_logo');
+    if (logoInputRef.current) logoInputRef.current.value = '';
+  };
 
   const onSaveEtablissement = (data: EtablissementForm) => {
     localStorage.setItem('etablissement', JSON.stringify(data));
+    if (logoPreview) {
+      localStorage.setItem('etablissement_logo', logoPreview);
+    } else {
+      localStorage.removeItem('etablissement_logo');
+    }
+    // Dispatch event so Sidebar updates immediately
+    window.dispatchEvent(new Event('etablissement-updated'));
     toast.success("Informations de l'établissement enregistrées");
   };
 
@@ -120,6 +153,33 @@ export default function SettingsPage() {
               <h2 className="text-lg font-semibold mb-4">Informations de l'établissement</h2>
               <form onSubmit={etabForm.handleSubmit(onSaveEtablissement)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Logo upload */}
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium mb-2 block">Logo de l'établissement</label>
+                    <div className="flex items-center gap-4">
+                      <div
+                        onClick={() => logoInputRef.current?.click()}
+                        className="relative h-20 w-20 rounded-xl bg-muted flex items-center justify-center cursor-pointer border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors overflow-hidden"
+                      >
+                        {logoPreview ? (
+                          <img src={logoPreview} alt="Logo" className="h-full w-full object-contain p-1" />
+                        ) : (
+                          <Upload size={24} className="text-muted-foreground" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Cliquez pour charger un logo (max 500 Ko)</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG ou SVG recommandé</p>
+                        {logoPreview && (
+                          <button type="button" onClick={removeLogo} className="flex items-center gap-1 text-xs text-destructive hover:underline mt-1">
+                            <X size={12} /> Supprimer le logo
+                          </button>
+                        )}
+                      </div>
+                      <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                    </div>
+                  </div>
+
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium mb-1 block">Nom de l'établissement *</label>
                     <input {...etabForm.register('nomEtablissement')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
