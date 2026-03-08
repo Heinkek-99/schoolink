@@ -268,7 +268,7 @@ export default function EleveCreate() {
 
             <div>
               <label className="text-sm font-medium mb-1 block">Année scolaire</label>
-              <input value={ANNEE_SCOLAIRE} readOnly className="w-full px-3 py-2 border rounded-lg bg-muted text-sm" />
+              <input value={anneeScolaire} readOnly className="w-full px-3 py-2 border rounded-lg bg-muted text-sm" />
             </div>
           </div>
           <div className="flex justify-between mt-6">
