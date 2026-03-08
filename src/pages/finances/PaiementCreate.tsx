@@ -124,7 +124,10 @@ export default function PaiementCreate() {
             montant: formValues.montant,
             mode: formValues.mode,
             reference: formValues.reference,
-            ventilations: ventilationsList,
+            ventilations: ventilationsList.map((v) => ({
+              eleveNom: familleDetail?.enfants?.find((e) => e.id === v.eleveId)?.prenom || '',
+              montant: v.montant,
+            })),
           });
           navigate('/finances');
         },
