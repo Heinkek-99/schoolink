@@ -34,6 +34,8 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<'etablissement' | 'typefrais' | 'utilisateurs' | 'notifications'>('etablissement');
   const { data: typeFrais, isLoading: typeFraisLoading } = useTypeFrais();
   const createTypeFraisMutation = useCreateTypeFrais();
+  const { canCreate, canEdit, isAdmin, isDirecteur } = usePermissions();
+  const notifications = useNotificationStore((s) => s.notifications);
   const [showNewTypeFrais, setShowNewTypeFrais] = useState(false);
 
   const etabForm = useForm<EtablissementForm>({
