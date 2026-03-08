@@ -121,7 +121,19 @@ export default function FamillesPage() {
   }, [familles, statusFilter]);
 
   const onSubmit = (data: FamilleForm) => {
-    createMutation.mutate(data as any, {
+    const cleanData: Record<string, any> = {
+      nomPere: data.nomPere,
+      telephonePrincipal: data.telephonePrincipal,
+      telephonePere: data.telephonePrincipal,
+    };
+    if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.emailPere) cleanData.emailPere = data.emailPere;
+    if (data.nomMere) cleanData.nomMere = data.nomMere;
+    if (data.prenomMere) cleanData.prenomMere = data.prenomMere;
+    if (data.adresse) cleanData.adresse = data.adresse;
+    if (data.ville) cleanData.ville = data.ville;
+
+    createMutation.mutate(cleanData as any, {
       onSuccess: () => {
         addNotification({ type: 'info', title: 'Nouvelle famille', message: `Famille ${data.nomPere} créée avec succès` });
         setShowModal(false);
