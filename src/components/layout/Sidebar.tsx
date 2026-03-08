@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, GraduationCap, Banknote,
-  BookOpen, Settings, ChevronLeft, ChevronRight, LogOut, Archive,
+  BookOpen, Settings, ChevronLeft, ChevronRight, LogOut,
 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { useLogout } from '@/hooks/useAuth';
