@@ -102,6 +102,7 @@ export default function ElevesPage() {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [search, setSearch] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
+  const [exporting, setExporting] = useState(false);
   const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
   const handleSearch = useCallback((q: string) => setSearch(q), []);
@@ -111,6 +112,50 @@ export default function ElevesPage() {
     const matchClasse = !classeFilter || e.classe === classeFilter;
     return matchSearch && matchClasse;
   });
+
+  const handleExportCSV = async () => {
+    if (!filtered?.length) return;
+    setExporting(true);
+    try {
+      const dossiers = await Promise.all(filtered.map((e) => elevesApi.getById(e.id)));
+      const headers = ['Matricule','Nom','Prénom','Date naissance','Lieu naissance','Sexe','Classe','Famille','Nationalité','Groupe sanguin','Allergies','Contact urgence','Remarques','Date inscription','Total dû','Total payé','Solde','Statut'];
+      const rows = dossiers.map((d, i) => [
+        d.matricule,
+        d.nom,
+        d.prenom,
+        d.dateNaissance ? new Date(d.dateNaissance).toLocaleDateString('fr-FR') : '',
+        d.lieuNaissance,
+        d.sexe === 'M' || d.sexe === '0' ? 'Masculin' : 'Féminin',
+        d.classe || '',
+        d.famille || '',
+        d.nationalite || '',
+        d.groupeSanguin || '',
+        d.allergies || '',
+        d.contactUrgence || '',
+        d.remarques || '',
+        d.dateInscription ? new Date(d.dateInscription).toLocaleDateString('fr-FR') : '',
+        d.totalDu ?? 0,
+        d.totalPaye ?? 0,
+        d.solde ?? 0,
+        filtered[i].statut || '',
+      ]);
+      const csvContent = [headers, ...rows]
+        .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        .join('\n');
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `eleves-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`${dossiers.length} élève(s) exporté(s)`);
+    } catch {
+      toast.error("Erreur lors de l'export");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div>
