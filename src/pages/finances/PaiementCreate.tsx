@@ -110,6 +110,11 @@ export default function PaiementCreate() {
       },
       {
         onSuccess: () => {
+          addNotification({
+            type: 'paiement',
+            title: 'Paiement enregistré',
+            message: `${formatCurrency(values.montant)} reçu de ${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
+          });
           generateReceiptPDF({
             familleNom: `${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
             date: values.date,
