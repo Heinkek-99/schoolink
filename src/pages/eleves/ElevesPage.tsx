@@ -95,7 +95,7 @@ export default function ElevesPage() {
   const navigate = useNavigate();
   const { data: eleves, isLoading } = useEleves();
   const { data: classes } = useClasses();
-  const { canCreate, canEdit, canDelete } = usePermissions();
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [search, setSearch] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
 
