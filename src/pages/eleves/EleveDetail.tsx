@@ -119,25 +119,25 @@ export default function EleveDetail() {
         </div>
       </div>
 
-      {/* Archive confirmation */}
-      {showArchiveConfirm && (
-        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowArchiveConfirm(false)}>
+      {/* Delete confirmation */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDeleteConfirm(false)}>
           <div className="bg-card rounded-xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-destructive mb-2">Archiver cet élève ?</h3>
+            <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cet élève ?</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              L'élève <strong>{eleve.prenom} {eleve.nom}</strong> ({eleve.matricule}) sera archivé.
-              Vous pourrez le restaurer depuis les archives.
+              L'élève <strong>{eleve.prenom} {eleve.nom}</strong> ({eleve.matricule}) sera définitivement supprimé.
+              Cette action est irréversible.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setShowArchiveConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
                 Annuler
               </button>
               <button
-                onClick={handleArchive}
-                disabled={archiveMutation.isPending}
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
                 className="flex-1 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
               >
-                {archiveMutation.isPending ? 'Archivage...' : 'Confirmer'}
+                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
               </button>
             </div>
           </div>
