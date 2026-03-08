@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paiementsApi } from '@/api/paiements.api';
-import type { CreatePaiementRequest } from '@/types/paiement.types';
+import type { CreatePaiementRequest, CreateTypeFraisRequest } from '@/types/paiement.types';
 import toast from 'react-hot-toast';
 
 export function usePaiementsByFamille(familleId: string) {
@@ -29,5 +29,17 @@ export function useTypeFrais() {
   return useQuery({
     queryKey: ['typeFrais'],
     queryFn: paiementsApi.getTypeFrais,
+  });
+}
+
+export function useCreateTypeFrais() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateTypeFraisRequest) => paiementsApi.createTypeFrais(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['typeFrais'] });
+      toast.success('Type de frais créé avec succès');
+    },
+    onError: () => toast.error('Erreur lors de la création du type de frais'),
   });
 }
