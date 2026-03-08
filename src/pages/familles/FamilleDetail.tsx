@@ -62,8 +62,23 @@ export default function FamilleDetail() {
   };
 
   const onSave = (data: EditFamilleForm) => {
+    // Clean empty strings to undefined, and sync telephonePere with telephonePrincipal
+    const cleanData: Record<string, any> = {
+      id: id!,
+      nomPere: data.nomPere,
+      telephonePrincipal: data.telephonePrincipal,
+      telephonePere: data.telephonePrincipal,
+    };
+    if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.emailPere) cleanData.emailPere = data.emailPere;
+    if (data.nomMere) cleanData.nomMere = data.nomMere;
+    if (data.prenomMere) cleanData.prenomMere = data.prenomMere;
+    if (data.telephoneMere) cleanData.telephoneMere = data.telephoneMere;
+    if (data.adresse) cleanData.adresse = data.adresse;
+    if (data.ville) cleanData.ville = data.ville;
+
     updateMutation.mutate(
-      { id: id!, ...data } as any,
+      cleanData as any,
       { onSuccess: () => setIsEditing(false) }
     );
   };

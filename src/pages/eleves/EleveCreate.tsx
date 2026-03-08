@@ -75,6 +75,7 @@ export default function EleveCreate() {
     const cleanData: Record<string, any> = {
       nomPere: data.nomPere,
       telephonePrincipal: data.telephonePrincipal,
+      telephonePere: data.telephonePrincipal, // same as principal
     };
     if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
     if (data.emailPere) cleanData.emailPere = data.emailPere;
