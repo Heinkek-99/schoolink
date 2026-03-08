@@ -267,6 +267,10 @@ export default function FamilleDetail() {
                   <input {...editForm.register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
                 <div>
+                  <label className="text-sm font-medium mb-1 block">Téléphone du père</label>
+                  <input {...editForm.register('telephonePere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+                <div>
                   <label className="text-sm font-medium mb-1 block">Email</label>
                   <input {...editForm.register('emailPere')} type="email" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
