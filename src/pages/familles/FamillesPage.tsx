@@ -172,16 +172,18 @@ export default function FamillesPage() {
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <SearchBar placeholder="Rechercher une famille..." onSearch={handleSearch} />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-card text-sm text-foreground outline-none"
-        >
-          <option value="">Tous les statuts</option>
-          <option value="Payé">À jour</option>
-          <option value="Partiel">Partiel</option>
-          <option value="Impayé">Impayé</option>
-        </select>
+        {canView('finances') && (
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border rounded-lg bg-card text-sm text-foreground outline-none"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="Payé">À jour</option>
+            <option value="Partiel">Partiel</option>
+            <option value="Impayé">Impayé</option>
+          </select>
+        )}
       </div>
 
       {isLoading ? (
