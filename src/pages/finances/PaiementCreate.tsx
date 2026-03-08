@@ -12,6 +12,7 @@ import { useCreatePaiement } from '@/hooks/usePaiements';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { PAYMENT_MODES } from '@/utils/constants';
 import { generateReceiptPDF } from '@/utils/generatePDF';
+import { MODE_PAIEMENT_MAP } from '@/types/paiement.types';
 import type { Famille } from '@/types/famille.types';
 
 const paiementSchema = z.object({
