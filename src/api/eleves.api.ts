@@ -26,12 +26,13 @@ export const elevesApi = {
     await api.delete(`/api/Eleves/${id}`);
   },
   getArchived: async (): Promise<Eleve[]> => {
-    try {
-      const response = await api.get('/api/Eleves', { params: { statut: 'Archivé' } });
-      return response.data;
-    } catch {
-      return [];
-    }
+    // No dedicated endpoint — fetch all and filter archived
+    const response = await api.get('/api/Eleves');
+    const all: Eleve[] = response.data;
+    return all.filter((e) => e.statut === 'Archivé');
+  },
+  archive: async (id: string): Promise<void> => {
+    await api.put(`/api/Eleves/${id}/archive`);
   },
   restore: async (id: string): Promise<void> => {
     await api.put(`/api/Eleves/${id}/restore`);
