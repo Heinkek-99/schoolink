@@ -27,8 +27,8 @@ const ROLE_ACCESS: Record<UserRole, {
     canCreate: ['eleves', 'familles'],
     canEdit: ['eleves', 'familles'],
     canDelete: [],
-    canView: ['dashboard', 'familles', 'eleves', 'finances', 'academique'],
-    navItems: ['/', '/familles', '/eleves', '/finances', '/academique'],
+    canView: ['dashboard', 'familles', 'eleves', 'academique'],
+    navItems: ['/', '/familles', '/eleves', '/academique'],
   },
   Comptable: {
     canCreate: ['paiements'],
