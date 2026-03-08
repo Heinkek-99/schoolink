@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, ArrowRight, Check, User, Users, ClipboardCheck, Plus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, User, Users, ClipboardCheck, Plus, Camera } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useCreateEleve, useClasses } from '@/hooks/useEleves';
 import { useFamilles, useCreateFamille } from '@/hooks/useFamilles';
@@ -15,8 +15,13 @@ const step1Schema = z.object({
   nom: z.string().min(1, 'Nom requis').max(100),
   prenom: z.string().min(1, 'Prénom requis').max(100),
   dateNaissance: z.string().min(1, 'Date de naissance requise'),
-  lieuNaissance: z.string().min(1, 'Lieu de naissance requis').max(100),
+  lieuNaissance: z.string().min(1, 'Lieu de naissance requis').max(200),
   sexe: z.enum(['M', 'F'], { required_error: 'Sexe requis' }),
+  nationalite: z.string().optional(),
+  groupeSanguin: z.string().optional(),
+  allergies: z.string().optional(),
+  contactUrgence: z.string().optional(),
+  remarques: z.string().optional(),
 });
 
 const step2Schema = z.object({
@@ -39,12 +44,17 @@ type Step1 = z.infer<typeof step1Schema>;
 type Step2 = z.infer<typeof step2Schema>;
 type NewFamilleForm = z.infer<typeof newFamilleSchema>;
 
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
 export default function EleveCreate() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [step1Data, setStep1Data] = useState<Step1 | null>(null);
   const [showNewFamille, setShowNewFamille] = useState(false);
   const [createdFamilleLabel, setCreatedFamilleLabel] = useState('');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const { data: classes, isLoading: classesLoading } = useClasses();
   const { data: familles, isLoading: famillesLoading } = useFamilles();
   const createMutation = useCreateEleve();
@@ -62,6 +72,16 @@ export default function EleveCreate() {
     { num: 3, label: 'Récapitulatif', icon: ClipboardCheck },
   ];
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPhotoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const onStep1Submit = (data: Step1) => {
     setStep1Data(data);
     setStep(2);
@@ -72,7 +92,6 @@ export default function EleveCreate() {
   };
 
   const handleCreateFamille = (data: NewFamilleForm) => {
-    // Clean empty strings to undefined for optional fields
     const cleanData: Record<string, any> = {
       nomPere: data.nomPere,
       telephonePrincipal: data.telephonePrincipal,
@@ -84,23 +103,15 @@ export default function EleveCreate() {
     if (data.adresse) cleanData.adresse = data.adresse;
     if (data.ville) cleanData.ville = data.ville;
 
-    console.log('[CreateFamille] Sending:', cleanData);
     createFamilleMutation.mutate(cleanData as any, {
       onSuccess: (newFamille: any) => {
-        console.log('[CreateFamille] Response:', newFamille);
-        // The API may return the id directly or as an object
         const familleId = typeof newFamille === 'string' ? newFamille : newFamille?.id;
         if (familleId) {
           form2.setValue('familleId', familleId);
           setCreatedFamilleLabel(`${data.nomPere} ${data.prenomPere || ''} — ${data.telephonePrincipal}`);
           setShowNewFamille(false);
           formFamille.reset();
-        } else {
-          console.error('[CreateFamille] Could not extract familleId from:', newFamille);
         }
-      },
-      onError: (err: any) => {
-        console.error('[CreateFamille] Error:', err);
       },
     });
   };
@@ -108,17 +119,23 @@ export default function EleveCreate() {
   const handleConfirm = () => {
     if (!step1Data) return;
     const step2Values = form2.getValues();
-    // API expects Sexe as numeric enum: 0 = Masculin, 1 = Feminin
     const sexeValue = step1Data.sexe === 'M' ? 0 : 1;
-    const payload = {
+    const payload: any = {
       nom: step1Data.nom,
       prenom: step1Data.prenom,
       dateNaissance: step1Data.dateNaissance,
       lieuNaissance: step1Data.lieuNaissance,
-      sexe: sexeValue as any,
+      sexe: sexeValue,
       classeId: step2Values.classeId,
       familleId: step2Values.familleId,
     };
+    if (step1Data.nationalite) payload.nationalite = step1Data.nationalite;
+    if (step1Data.groupeSanguin) payload.groupeSanguin = step1Data.groupeSanguin;
+    if (step1Data.allergies) payload.allergies = step1Data.allergies;
+    if (step1Data.contactUrgence) payload.contactUrgence = step1Data.contactUrgence;
+    if (step1Data.remarques) payload.remarques = step1Data.remarques;
+    if (photoFile) payload.photo = photoFile;
+
     console.log('[CreateEleve] Sending:', payload);
     createMutation.mutate(
       payload,
@@ -132,6 +149,8 @@ export default function EleveCreate() {
   const watchedFamilleId = form2.watch('familleId');
   const selectedFamille = familles?.find((f) => f.id === watchedFamilleId);
   const selectedClasse = classes?.find((c) => c.id === form2.watch('classeId'));
+
+  const inputClass = "w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
     <div>
@@ -156,32 +175,64 @@ export default function EleveCreate() {
         ))}
       </div>
 
-      {/* Step 1 */}
+      {/* Step 1 - Personal info */}
       {step === 1 && (
-        <form onSubmit={form1.handleSubmit(onStep1Submit)} className="bg-card rounded-xl border shadow-sm p-6 max-w-2xl">
+        <form onSubmit={form1.handleSubmit(onStep1Submit)} className="bg-card rounded-xl border shadow-sm p-6 max-w-3xl">
           <h2 className="text-lg font-semibold mb-4">Informations personnelles</h2>
+
+          {/* Photo upload */}
+          <div className="flex items-center gap-4 mb-6">
+            <div
+              onClick={() => photoInputRef.current?.click()}
+              className="relative h-20 w-20 rounded-full bg-muted flex items-center justify-center cursor-pointer border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors overflow-hidden"
+            >
+              {photoPreview ? (
+                <img src={photoPreview} alt="Photo" className="h-full w-full object-cover" />
+              ) : (
+                <Camera size={24} className="text-muted-foreground" />
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-medium">Photo de l'élève</p>
+              <p className="text-xs text-muted-foreground">Cliquez pour ajouter une photo (optionnel)</p>
+              <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Nom *</label>
-              <input {...form1.register('nom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...form1.register('nom')} className={inputClass} />
               {form1.formState.errors.nom && <p className="text-xs text-destructive mt-1">{form1.formState.errors.nom.message}</p>}
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Prénom *</label>
-              <input {...form1.register('prenom')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...form1.register('prenom')} className={inputClass} />
               {form1.formState.errors.prenom && <p className="text-xs text-destructive mt-1">{form1.formState.errors.prenom.message}</p>}
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Date de naissance *</label>
-              <input {...form1.register('dateNaissance')} type="date" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...form1.register('dateNaissance')} type="date" className={inputClass} />
               {form1.formState.errors.dateNaissance && <p className="text-xs text-destructive mt-1">{form1.formState.errors.dateNaissance.message}</p>}
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Lieu de naissance *</label>
-              <input {...form1.register('lieuNaissance')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...form1.register('lieuNaissance')} className={inputClass} />
               {form1.formState.errors.lieuNaissance && <p className="text-xs text-destructive mt-1">{form1.formState.errors.lieuNaissance.message}</p>}
             </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Nationalité</label>
+              <input {...form1.register('nationalite')} placeholder="Ex: Camerounaise" className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Groupe sanguin</label>
+              <select {...form1.register('groupeSanguin')} className={inputClass}>
+                <option value="">Non renseigné</option>
+                {BLOOD_GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
           </div>
+
           <div className="mt-4">
             <label className="text-sm font-medium mb-2 block">Sexe *</label>
             <div className="flex gap-4">
@@ -194,6 +245,23 @@ export default function EleveCreate() {
             </div>
             {form1.formState.errors.sexe && <p className="text-xs text-destructive mt-1">{form1.formState.errors.sexe.message}</p>}
           </div>
+
+          {/* Additional fields */}
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Contact d'urgence</label>
+              <input {...form1.register('contactUrgence')} placeholder="Nom et numéro du contact d'urgence" className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Allergies</label>
+              <input {...form1.register('allergies')} placeholder="Allergies connues (optionnel)" className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Remarques</label>
+              <textarea {...form1.register('remarques')} rows={2} placeholder="Remarques supplémentaires..." className={inputClass} />
+            </div>
+          </div>
+
           <div className="flex justify-end mt-6">
             <button type="submit" className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
               Suivant <ArrowRight size={16} />
@@ -202,12 +270,11 @@ export default function EleveCreate() {
         </form>
       )}
 
-      {/* Step 2 */}
+      {/* Step 2 - Rattachement */}
       {step === 2 && (
         <form onSubmit={form2.handleSubmit(onStep2Submit)} className="bg-card rounded-xl border shadow-sm p-6 max-w-2xl">
           <h2 className="text-lg font-semibold mb-4">Rattachement</h2>
           <div className="space-y-4">
-            {/* Famille selection */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium">Famille *</label>
@@ -222,37 +289,37 @@ export default function EleveCreate() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium mb-1 block">Nom du père *</label>
-                      <input {...formFamille.register('nomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      <input {...formFamille.register('nomPere')} className={inputClass} />
                       {formFamille.formState.errors.nomPere && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.nomPere.message}</p>}
                     </div>
                     <div>
                       <label className="text-xs font-medium mb-1 block">Prénom du père</label>
-                      <input {...formFamille.register('prenomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      <input {...formFamille.register('prenomPere')} className={inputClass} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium mb-1 block">Téléphone principal *</label>
-                      <input {...formFamille.register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      <input {...formFamille.register('telephonePrincipal')} className={inputClass} />
                       {formFamille.formState.errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{formFamille.formState.errors.telephonePrincipal.message}</p>}
                     </div>
                     <div>
                       <label className="text-xs font-medium mb-1 block">Téléphone du père</label>
-                      <input {...formFamille.register('telephonePere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      <input {...formFamille.register('telephonePere')} className={inputClass} />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium mb-1 block">Adresse</label>
-                    <input {...formFamille.register('adresse')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" placeholder="Quartier, rue..." />
+                    <input {...formFamille.register('adresse')} className={inputClass} placeholder="Quartier, rue..." />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium mb-1 block">Ville</label>
-                      <input {...formFamille.register('ville')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      <input {...formFamille.register('ville')} className={inputClass} />
                     </div>
                     <div>
                       <label className="text-xs font-medium mb-1 block">Email</label>
-                      <input {...formFamille.register('emailPere')} type="email" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                      <input {...formFamille.register('emailPere')} type="email" className={inputClass} />
                     </div>
                   </div>
                   <button
@@ -276,7 +343,7 @@ export default function EleveCreate() {
                       </button>
                     </div>
                   ) : (
-                    <select {...form2.register('familleId')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                    <select {...form2.register('familleId')} className={inputClass}>
                       <option value="">Sélectionner une famille</option>
                       {familles.map((f) => (
                         <option key={f.id} value={f.id}>{f.nomPere} {f.prenomPere} — {f.telephonePrincipal}</option>
@@ -287,7 +354,6 @@ export default function EleveCreate() {
                 </>
               )}
 
-              {/* Show selected famille info */}
               {watchedFamilleId && (selectedFamille || createdFamilleLabel) && (
                 <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
                   {selectedFamille ? (
@@ -302,13 +368,12 @@ export default function EleveCreate() {
               )}
             </div>
 
-            {/* Classe selection */}
             <div>
               <label className="text-sm font-medium mb-1 block">Classe *</label>
               {classesLoading ? (
                 <div className="p-2"><TableSkeleton rows={1} cols={1} /></div>
               ) : (
-                <select {...form2.register('classeId')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                <select {...form2.register('classeId')} className={inputClass}>
                   <option value="">Sélectionner une classe</option>
                   {classes?.map((c) => (
                     <option key={c.id} value={c.id}>{c.nom} ({c.effectif}/{c.capaciteMax})</option>
@@ -334,15 +399,32 @@ export default function EleveCreate() {
         </form>
       )}
 
-      {/* Step 3 */}
+      {/* Step 3 - Recap */}
       {step === 3 && (
         <div className="bg-card rounded-xl border shadow-sm p-6 max-w-2xl">
           <h2 className="text-lg font-semibold mb-4">Récapitulatif</h2>
+          <div className="flex items-center gap-4 mb-4">
+            {photoPreview ? (
+              <img src={photoPreview} alt="Photo" className="h-16 w-16 rounded-full object-cover border" />
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold">
+                {step1Data?.prenom?.[0]}{step1Data?.nom?.[0]}
+              </div>
+            )}
+            <div>
+              <p className="text-lg font-bold">{step1Data?.prenom} {step1Data?.nom}</p>
+              <p className="text-sm text-muted-foreground">{step1Data?.sexe === 'M' ? 'Masculin' : 'Féminin'}</p>
+            </div>
+          </div>
           <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-            <p><span className="text-muted-foreground">Nom:</span> <strong>{step1Data?.prenom} {step1Data?.nom}</strong></p>
             <p><span className="text-muted-foreground">Date de naissance:</span> <strong>{step1Data?.dateNaissance}</strong></p>
             <p><span className="text-muted-foreground">Lieu:</span> <strong>{step1Data?.lieuNaissance}</strong></p>
-            <p><span className="text-muted-foreground">Sexe:</span> <strong>{step1Data?.sexe === 'M' ? 'Masculin' : 'Féminin'}</strong></p>
+            {step1Data?.nationalite && <p><span className="text-muted-foreground">Nationalité:</span> <strong>{step1Data.nationalite}</strong></p>}
+            {step1Data?.groupeSanguin && <p><span className="text-muted-foreground">Groupe sanguin:</span> <strong>{step1Data.groupeSanguin}</strong></p>}
+            {step1Data?.contactUrgence && <p><span className="text-muted-foreground">Contact d'urgence:</span> <strong>{step1Data.contactUrgence}</strong></p>}
+            {step1Data?.allergies && <p><span className="text-muted-foreground">Allergies:</span> <strong>{step1Data.allergies}</strong></p>}
+            {step1Data?.remarques && <p><span className="text-muted-foreground">Remarques:</span> <strong>{step1Data.remarques}</strong></p>}
+            <hr className="my-2" />
             <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille ? `${selectedFamille.nomPere} ${selectedFamille.prenomPere}` : createdFamilleLabel || '-'}</strong></p>
             <p><span className="text-muted-foreground">Classe:</span> <strong>{selectedClasse?.nom || '-'}</strong></p>
             <p><span className="text-muted-foreground">Année scolaire:</span> <strong>{anneeScolaire}</strong></p>

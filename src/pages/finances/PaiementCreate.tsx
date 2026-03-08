@@ -37,10 +37,9 @@ export default function PaiementCreate() {
   const [ventilations, setVentilations] = useState<Record<string, number>>({});
   const [formValues, setFormValues] = useState<PaiementForm>({ date: new Date().toISOString().split('T')[0], montant: 0, mode: '', reference: '' });
 
-  // Fetch full famille detail when selected
   const { data: familleDetail } = useFamille(selectedFamilleId || '');
 
-  const { register, handleSubmit, formState: { errors }, getValues } = useForm<PaiementForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<PaiementForm>({
     resolver: zodResolver(paiementSchema),
     defaultValues: formValues,
   });
@@ -66,7 +65,6 @@ export default function PaiementCreate() {
   const onStep2Submit = (data: PaiementForm) => {
     setFormValues(data);
     setStep(3);
-    // Initialize ventilations from detail
     if (familleDetail?.enfants) {
       const init: Record<string, number> = {};
       familleDetail.enfants.forEach((e) => { init[e.id] = 0; });
@@ -110,7 +108,6 @@ export default function PaiementCreate() {
       ventilations: ventilationsList,
       enregistrePar: user?.id,
     };
-    console.log('[PaiementCreate] payload:', JSON.stringify(payload, null, 2));
 
     createMutation.mutate(
       payload,
@@ -121,12 +118,21 @@ export default function PaiementCreate() {
             title: 'Paiement enregistré',
             message: `${formatCurrency(formValues.montant)} reçu de ${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
           });
+
+          // Find the first student for the receipt
+          const firstStudent = ventilationsList.length > 0
+            ? familleDetail?.enfants?.find((e) => e.id === ventilationsList[0].eleveId)
+            : null;
+
           generateReceiptPDF({
             familleNom: `${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
+            eleveNom: firstStudent ? `${firstStudent.prenom} ${firstStudent.nom}` : `${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
+            eleveClasse: firstStudent?.classe || '',
             date: formValues.date,
             montant: formValues.montant,
             mode: formValues.mode,
             reference: formValues.reference,
+            objet: 'Frais de scolarité',
             ventilations: ventilationsList.map((v) => ({
               eleveNom: familleDetail?.enfants?.find((e) => e.id === v.eleveId)?.prenom || '',
               montant: v.montant,
@@ -139,6 +145,7 @@ export default function PaiementCreate() {
   };
 
   const selectedFamilleFromList = familles?.find(f => f.id === selectedFamilleId);
+  const inputClass = "w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
     <div>
@@ -171,7 +178,7 @@ export default function PaiementCreate() {
             value={familleSearch}
             onChange={(e) => setFamilleSearch(e.target.value)}
             placeholder="Rechercher une famille..."
-            className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30 mb-4"
+            className={`${inputClass} mb-4`}
           />
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {filteredFamilles?.map((f) => (
@@ -202,17 +209,17 @@ export default function PaiementCreate() {
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Date *</label>
-              <input {...register('date')} type="date" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...register('date')} type="date" className={inputClass} />
               {errors.date && <p className="text-xs text-destructive mt-1">{errors.date.message}</p>}
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Montant total (FCFA) *</label>
-              <input {...register('montant', { valueAsNumber: true })} type="number" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...register('montant', { valueAsNumber: true })} type="number" className={inputClass} />
               {errors.montant && <p className="text-xs text-destructive mt-1">{errors.montant.message}</p>}
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Mode de paiement *</label>
-              <select {...register('mode')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30">
+              <select {...register('mode')} className={inputClass}>
                 <option value="">Sélectionner</option>
                 {PAYMENT_MODES.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
@@ -220,7 +227,7 @@ export default function PaiementCreate() {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Référence</label>
-              <input {...register('reference')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...register('reference')} className={inputClass} />
             </div>
           </div>
           <div className="flex justify-between mt-6">
