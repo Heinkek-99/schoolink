@@ -284,25 +284,46 @@ export default function EleveDetail() {
                     <th className="text-left p-4 font-medium text-muted-foreground">Montant</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Payé</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">Échéance</th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {eleve.frais.map((f) => (
-                    <tr key={f.id}>
-                      <td className="p-4">{f.libelle}</td>
-                      <td className="p-4 text-muted-foreground">{f.periode || '-'}</td>
-                      <td className="p-4">{formatCurrency(f.montant)}</td>
-                      <td className="p-4">{formatCurrency(f.montantPaye)}</td>
-                      <td className="p-4 font-medium">{formatCurrency(f.montant - f.montantPaye)}</td>
-                      <td className="p-4 text-muted-foreground">{f.echeance ? formatDate(f.echeance) : '-'}</td>
-                      <td className="p-4">
-                        <PaymentStatusBadge status={f.isEchu ? 'Impayé' : getPaymentStatus(f.montant, f.montantPaye)} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                     <th className="text-left p-4 font-medium text-muted-foreground">Échéance</th>
+                     <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
+                     <th className="text-right p-4 font-medium text-muted-foreground">Actions</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y">
+                   {eleve.frais.map((f) => (
+                     <tr key={f.id}>
+                       <td className="p-4">{f.libelle}</td>
+                       <td className="p-4 text-muted-foreground">{f.periode || '-'}</td>
+                       <td className="p-4">{formatCurrency(f.montant)}</td>
+                       <td className="p-4">{formatCurrency(f.montantPaye)}</td>
+                       <td className="p-4 font-medium">{formatCurrency(f.montant - f.montantPaye)}</td>
+                       <td className="p-4 text-muted-foreground">{f.echeance ? formatDate(f.echeance) : '-'}</td>
+                       <td className="p-4">
+                         <PaymentStatusBadge status={f.isEchu ? 'Impayé' : getPaymentStatus(f.montant, f.montantPaye)} />
+                       </td>
+                       <td className="p-4 text-right">
+                         {f.montantPaye > 0 && (
+                           <button
+                             onClick={() => generateReceiptPDF({
+                               familleNom: eleve.famille || '-',
+                               eleveNom: `${eleve.prenom} ${eleve.nom}`,
+                               eleveClasse: eleve.classe || '-',
+                               date: new Date().toLocaleDateString('fr-FR'),
+                               montant: f.montantPaye,
+                               mode: '-',
+                               objet: f.libelle,
+                               ventilations: [{ eleveNom: `${eleve.prenom} ${eleve.nom}`, montant: f.montantPaye }],
+                             })}
+                             className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                             title="Imprimer le reçu"
+                           >
+                             <Printer size={14} /> Reçu
+                           </button>
+                         )}
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
               </table>
             </div>
           ) : (
