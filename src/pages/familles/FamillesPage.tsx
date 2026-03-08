@@ -199,11 +199,11 @@ export default function FamillesPage() {
               <thead>
                 <tr className="border-b bg-muted/50">
                   <th className="text-left p-4 font-medium text-muted-foreground">Famille</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Téléphone</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Nb enfants</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Total dû</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Total payé</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
+                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Total dû</th>}
+                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>}
+                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>}
                   <th className="w-12"></th>
                 </tr>
               </thead>
@@ -211,11 +211,11 @@ export default function FamillesPage() {
                 {filtered.map((f) => (
                   <tr key={f.id} onClick={() => navigate(`/familles/${f.id}`)} className="hover:bg-muted/30 cursor-pointer transition-colors">
                     <td className="p-4 font-medium">{f.nomPere} {f.prenomPere}</td>
+                    <td className="p-4 text-muted-foreground">{f.telephonePrincipal}</td>
                     <td className="p-4">{f.nombreEnfants}</td>
-                    <td className="p-4">{formatCurrency(f.totalDu)}</td>
-                    <td className="p-4">{formatCurrency(f.totalPaye)}</td>
-                    <td className="p-4 font-medium">{formatCurrency(f.soldeGlobal)}</td>
-                    <td className="p-4"><PaymentStatusBadge status={f.statutPaiement} /></td>
+                    {canView('finances') && <td className="p-4">{formatCurrency(f.totalDu)}</td>}
+                    {canView('finances') && <td className="p-4 font-medium">{formatCurrency(f.soldeGlobal)}</td>}
+                    {canView('finances') && <td className="p-4"><PaymentStatusBadge status={f.statutPaiement} /></td>}
                     <td className="p-4">
                       <ActionMenu
                         famille={f}
