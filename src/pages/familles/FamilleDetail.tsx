@@ -64,14 +64,13 @@ export default function FamilleDetail() {
   };
 
   const onSave = (data: EditFamilleForm) => {
-    // Clean empty strings to undefined, and sync telephonePere with telephonePrincipal
     const cleanData: Record<string, any> = {
       id: id!,
       nomPere: data.nomPere,
       telephonePrincipal: data.telephonePrincipal,
-      telephonePere: data.telephonePrincipal,
     };
     if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.telephonePere) cleanData.telephonePere = data.telephonePere;
     if (data.emailPere) cleanData.emailPere = data.emailPere;
     if (data.nomMere) cleanData.nomMere = data.nomMere;
     if (data.prenomMere) cleanData.prenomMere = data.prenomMere;
@@ -79,9 +78,13 @@ export default function FamilleDetail() {
     if (data.adresse) cleanData.adresse = data.adresse;
     if (data.ville) cleanData.ville = data.ville;
 
+    console.log('[UpdateFamille] Sending:', cleanData);
     updateMutation.mutate(
       cleanData as any,
-      { onSuccess: () => setIsEditing(false) }
+      {
+        onSuccess: () => { console.log('[UpdateFamille] Success'); setIsEditing(false); },
+        onError: (err: any) => console.error('[UpdateFamille] Error:', err),
+      }
     );
   };
 
