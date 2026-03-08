@@ -93,7 +93,7 @@ export default function FamillesPage() {
   const { data: familles, isLoading } = useFamilles(debouncedSearch || undefined);
   const createMutation = useCreateFamille();
   const deleteMutation = useDeleteFamille();
-  const { canCreate, canEdit, canDelete } = usePermissions();
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -172,16 +172,18 @@ export default function FamillesPage() {
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <SearchBar placeholder="Rechercher une famille..." onSearch={handleSearch} />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-card text-sm text-foreground outline-none"
-        >
-          <option value="">Tous les statuts</option>
-          <option value="Payé">À jour</option>
-          <option value="Partiel">Partiel</option>
-          <option value="Impayé">Impayé</option>
-        </select>
+        {canView('finances') && (
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border rounded-lg bg-card text-sm text-foreground outline-none"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="Payé">À jour</option>
+            <option value="Partiel">Partiel</option>
+            <option value="Impayé">Impayé</option>
+          </select>
+        )}
       </div>
 
       {isLoading ? (
@@ -197,11 +199,11 @@ export default function FamillesPage() {
               <thead>
                 <tr className="border-b bg-muted/50">
                   <th className="text-left p-4 font-medium text-muted-foreground">Famille</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Téléphone</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Nb enfants</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Total dû</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Total payé</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
+                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Total dû</th>}
+                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>}
+                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>}
                   <th className="w-12"></th>
                 </tr>
               </thead>
@@ -209,11 +211,11 @@ export default function FamillesPage() {
                 {filtered.map((f) => (
                   <tr key={f.id} onClick={() => navigate(`/familles/${f.id}`)} className="hover:bg-muted/30 cursor-pointer transition-colors">
                     <td className="p-4 font-medium">{f.nomPere} {f.prenomPere}</td>
+                    <td className="p-4 text-muted-foreground">{f.telephonePrincipal}</td>
                     <td className="p-4">{f.nombreEnfants}</td>
-                    <td className="p-4">{formatCurrency(f.totalDu)}</td>
-                    <td className="p-4">{formatCurrency(f.totalPaye)}</td>
-                    <td className="p-4 font-medium">{formatCurrency(f.soldeGlobal)}</td>
-                    <td className="p-4"><PaymentStatusBadge status={f.statutPaiement} /></td>
+                    {canView('finances') && <td className="p-4">{formatCurrency(f.totalDu)}</td>}
+                    {canView('finances') && <td className="p-4 font-medium">{formatCurrency(f.soldeGlobal)}</td>}
+                    {canView('finances') && <td className="p-4"><PaymentStatusBadge status={f.statutPaiement} /></td>}
                     <td className="p-4">
                       <ActionMenu
                         famille={f}

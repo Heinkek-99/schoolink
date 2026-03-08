@@ -95,7 +95,7 @@ export default function ElevesPage() {
   const navigate = useNavigate();
   const { data: eleves, isLoading } = useEleves();
   const { data: classes } = useClasses();
-  const { canCreate, canEdit, canDelete } = usePermissions();
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [search, setSearch] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
 
@@ -150,7 +150,7 @@ export default function ElevesPage() {
                   <th className="text-left p-4 font-medium text-muted-foreground">Nom complet</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Classe</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Famille</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>
+                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>}
                   <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
                   <th className="text-right p-4 font-medium text-muted-foreground">Actions</th>
                 </tr>
@@ -162,7 +162,7 @@ export default function ElevesPage() {
                     <td className="p-4 font-medium">{e.prenom} {e.nom}</td>
                     <td className="p-4">{e.classe || '-'}</td>
                     <td className="p-4">{e.famille || '-'}</td>
-                    <td className="p-4">{formatCurrency(e.solde)}</td>
+                    {canView('finances') && <td className="p-4">{formatCurrency(e.solde)}</td>}
                     <td className="p-4"><PaymentStatusBadge status={e.statut} /></td>
                     <td className="p-4 text-right">
                       <ActionMenu eleve={e} canEdit={canEdit('eleves')} canDelete={canDelete('eleves')} />
