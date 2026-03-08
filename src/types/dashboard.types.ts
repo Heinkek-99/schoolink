@@ -15,12 +15,15 @@ export interface StatistiqueClasse {
 }
 
 export interface FamilleImpayee {
-  id: string;
-  nomPere: string;
-  prenomPere: string;
+  familleId: string;
+  nomFamille: string;
+  telephone: string;
   nombreEnfants: number;
-  totalDu: number;
-  totalPaye: number;
-  soldeGlobal: number;
-  statutPaiement: string;
+  montantDu: number;
+  montantPaye: number;
+  soldeRestant: number;
+  prochaineEcheance: string;
+  joursRetard: number;
+  niveauPriorite: string;
+  statutImpaie: string;
 }

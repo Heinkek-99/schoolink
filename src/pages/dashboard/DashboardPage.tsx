@@ -99,9 +99,9 @@ export default function DashboardPage() {
 
       {/* Familles Impayées Table */}
       <div className="bg-card rounded-xl border shadow-sm p-5">
-        <h3 className="font-semibold text-foreground mb-4">Familles impayées</h3>
+        <h3 className="font-semibold text-foreground mb-4">Top familles impayées</h3>
         {impayesLoading ? (
-          <TableSkeleton rows={5} cols={5} />
+          <TableSkeleton rows={5} cols={6} />
         ) : !impayes?.length ? (
           <EmptyState title="Aucune famille impayée" description="Toutes les familles sont à jour" />
         ) : (
@@ -112,19 +112,23 @@ export default function DashboardPage() {
                   <th className="pb-3 font-medium text-muted-foreground">Famille</th>
                   <th className="pb-3 font-medium text-muted-foreground">Enfants</th>
                   <th className="pb-3 font-medium text-muted-foreground">Montant dû</th>
+                  <th className="pb-3 font-medium text-muted-foreground">Solde restant</th>
+                  <th className="pb-3 font-medium text-muted-foreground">Priorité</th>
                   <th className="pb-3 font-medium text-muted-foreground">Statut</th>
                   <th className="pb-3 font-medium text-muted-foreground">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {impayes.slice(0, 10).map((f) => (
-                  <tr key={f.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="py-3 font-medium">{f.nomPere} {f.prenomPere}</td>
+                  <tr key={f.familleId} className="hover:bg-muted/50 transition-colors">
+                    <td className="py-3 font-medium">{f.nomFamille}</td>
                     <td className="py-3">{f.nombreEnfants}</td>
-                    <td className="py-3">{formatCurrency(f.totalDu)}</td>
-                    <td className="py-3"><PaymentStatusBadge status={f.statutPaiement} /></td>
+                    <td className="py-3">{formatCurrency(f.montantDu)}</td>
+                    <td className="py-3 font-medium text-destructive">{formatCurrency(f.soldeRestant)}</td>
+                    <td className="py-3"><PaymentStatusBadge status={f.niveauPriorite} /></td>
+                    <td className="py-3"><PaymentStatusBadge status={f.statutImpaie} /></td>
                     <td className="py-3">
-                      <button onClick={() => navigate(`/familles/${f.id}`)} className="text-primary text-sm hover:underline">
+                      <button onClick={() => navigate(`/familles/${f.familleId}`)} className="text-primary text-sm hover:underline">
                         Voir détails
                       </button>
                     </td>
