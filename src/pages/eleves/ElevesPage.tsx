@@ -100,6 +100,7 @@ export default function ElevesPage() {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [search, setSearch] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
+  const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
   const handleSearch = useCallback((q: string) => setSearch(q), []);
 
