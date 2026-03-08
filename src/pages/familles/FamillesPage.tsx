@@ -274,10 +274,16 @@ export default function FamillesPage() {
                   <input {...register('prenomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Téléphone principal *</label>
-                <input {...register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                {errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{errors.telephonePrincipal.message}</p>}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Téléphone principal *</label>
+                  <input {...register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  {errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{errors.telephonePrincipal.message}</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Téléphone du père</label>
+                  <input {...register('telephonePere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Email</label>
