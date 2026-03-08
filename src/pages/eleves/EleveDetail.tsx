@@ -137,7 +137,7 @@ export default function EleveDetail() {
       {activeTab === 'documents' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { label: "Carte d'élève", icon: CreditCard, action: () => generateStudentCardPDF({ nom: eleve.nom, prenom: eleve.prenom, matricule: eleve.matricule, classe: eleve.classe || '', anneeScolaire: ANNEE_SCOLAIRE }) },
+            { label: "Carte d'élève", icon: CreditCard, action: () => generateStudentCardPDF({ nom: eleve.nom, prenom: eleve.prenom, matricule: eleve.matricule, classe: eleve.classe || '', anneeScolaire }) },
             { label: "Certificat de scolarité", icon: FileText, action: () => {} },
             { label: "Bulletin financier", icon: BarChart3, action: () => {} },
             { label: "Bulletin de notes", icon: ClipboardList, action: () => {} },
