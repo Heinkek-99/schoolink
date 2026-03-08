@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, CreditCard, FileText, BarChart3, ClipboardList, Download, Trash2, Pencil, Save, Banknote, Printer } from 'lucide-react';
+import { ArrowLeft, CreditCard, FileText, BarChart3, ClipboardList, Download, Trash2, Pencil, Save, Banknote, Printer, Upload } from 'lucide-react';
 import { useEleve, useDeleteEleve, useUpdateEleve, useClasses } from '@/hooks/useEleves';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
