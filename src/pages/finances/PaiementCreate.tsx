@@ -61,7 +61,8 @@ export default function PaiementCreate() {
     setStep(2);
   };
 
-  const onStep2Submit = () => {
+  const onStep2Submit = (data: PaiementForm) => {
+    setFormValues(data);
     setStep(3);
     // Initialize ventilations from detail
     if (familleDetail?.enfants) {
