@@ -201,42 +201,45 @@ export function generateReceiptPDF(data: {
   doc.text('Addresse', 10, y);
   doc.setFont('helvetica', 'normal');
   doc.text([etab.adresse, etab.ville].filter(Boolean).join(', ') || '', 24, y);
-  y += 5;
+  y += 3.5;
   doc.setFont('helvetica', 'italic');
-  doc.text('Tel', 22, y);
+  doc.text('Tel', 10, y);
   doc.setFont('helvetica', 'normal');
-  doc.text(etab.telephone || '', 30, y);
+  doc.text(etab.telephone || '', 17, y);
+  doc.setFont('helvetica', 'italic');
+  doc.text('Email', 40, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(etab.email || '', 50, y);
 
   // ─── Right side box: Montant du compte / Ce paiement / Solde dû ───
-  const boxX = 110;
-  const boxY = y - 12;
+  const boxX = 80;
+  const boxY = y - 8;
   doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.3);
+  doc.setLineWidth(0.2);
 
-  // Table with 3 rows
-  const rowH = 7;
-  doc.rect(boxX, boxY, 82, rowH * 3);
-  doc.line(boxX, boxY + rowH, boxX + 82, boxY + rowH);
-  doc.line(boxX, boxY + rowH * 2, boxX + 82, boxY + rowH * 2);
-  doc.line(boxX + 42, boxY, boxX + 42, boxY + rowH * 3);
+  const rowH = 5;
+  doc.rect(boxX, boxY, 62, rowH * 3);
+  doc.line(boxX, boxY + rowH, boxX + 62, boxY + rowH);
+  doc.line(boxX, boxY + rowH * 2, boxX + 62, boxY + rowH * 2);
+  doc.line(boxX + 30, boxY, boxX + 30, boxY + rowH * 3);
 
-  doc.setFontSize(8);
+  doc.setFontSize(5.5);
   doc.setFont('helvetica', 'normal');
-  doc.text('Montant du compte', boxX + 3, boxY + 5);
-  doc.text('Ce paiement', boxX + 3, boxY + rowH + 5);
-  doc.text('Solde dû', boxX + 3, boxY + rowH * 2 + 5);
+  doc.text('Montant du compte', boxX + 2, boxY + 3.5);
+  doc.text('Ce paiement', boxX + 2, boxY + rowH + 3.5);
+  doc.text('Solde dû', boxX + 2, boxY + rowH * 2 + 3.5);
 
   doc.setFont('helvetica', 'bold');
   const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
-  doc.text(data.montantDuCompte !== undefined ? fmt(data.montantDuCompte) : '-', boxX + 44, boxY + 5);
-  doc.text(fmt(data.montant), boxX + 44, boxY + rowH + 5);
-  doc.text(data.soldeDu !== undefined ? fmt(data.soldeDu) : '-', boxX + 44, boxY + rowH * 2 + 5);
+  doc.text(data.montantDuCompte !== undefined ? fmt(data.montantDuCompte) : '-', boxX + 32, boxY + 3.5);
+  doc.text(fmt(data.montant), boxX + 32, boxY + rowH + 3.5);
+  doc.text(data.soldeDu !== undefined ? fmt(data.soldeDu) : '-', boxX + 32, boxY + rowH * 2 + 3.5);
 
   if (data.observation) {
-    y += 8;
-    doc.setFontSize(8);
+    y += 5;
+    doc.setFontSize(6);
     doc.setFont('helvetica', 'italic');
-    doc.text(`Obs: ${data.observation}`, 18, y);
+    doc.text(`Obs: ${data.observation}`, 8, y);
   }
 
   doc.save(`recu-${data.familleNom}-${data.date}.pdf`);
