@@ -91,7 +91,10 @@ export default function EleveCreate() {
         classeId: step2Values.classeId,
         familleId: step2Values.familleId,
       },
-      { onSuccess: () => navigate('/eleves') }
+      { onSuccess: () => {
+        addNotification({ type: 'inscription', title: 'Nouvelle inscription', message: `${step1Data.prenom} ${step1Data.nom} inscrit(e) avec succès` });
+        navigate('/eleves');
+      } }
     );
   };
 
