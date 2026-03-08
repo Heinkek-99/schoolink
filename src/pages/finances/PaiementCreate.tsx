@@ -74,7 +74,7 @@ export default function PaiementCreate() {
 
   const autoDistribute = () => {
     if (!familleDetail?.enfants) return;
-    const montant = getValues('montant');
+    const montant = formValues.montant;
     const totalDue = familleDetail.enfants.reduce((a, e) => a + e.solde, 0);
     const newV: Record<string, number> = {};
     let remaining = montant;
