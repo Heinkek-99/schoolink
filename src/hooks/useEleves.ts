@@ -59,17 +59,17 @@ export function useUpdateEleve() {
   });
 }
 
-export function useArchiveEleve() {
+export function useDeleteEleve() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => elevesApi.archive(id),
+    mutationFn: (id: string) => elevesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['eleves'] });
       qc.invalidateQueries({ queryKey: ['familles'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
-      toast.success('Élève archivé');
+      toast.success('Élève supprimé');
     },
-    onError: (err: any) => toast.error(err?.message || "Erreur lors de l'archivage"),
+    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la suppression'),
   });
 }
 
