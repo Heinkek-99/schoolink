@@ -50,16 +50,16 @@ export function useUpdateFamille() {
   });
 }
 
-export function useArchiveFamille() {
+export function useDeleteFamille() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => famillesApi.archive(id),
+    mutationFn: (id: string) => famillesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['familles'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
-      toast.success('Famille archivée');
+      toast.success('Famille supprimée');
     },
-    onError: (err: any) => toast.error(err?.message || "Erreur lors de l'archivage"),
+    onError: (err: any) => toast.error(err?.message || 'Erreur lors de la suppression'),
   });
 }
 
