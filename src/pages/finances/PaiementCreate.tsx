@@ -261,8 +261,8 @@ export default function PaiementCreate() {
 
           <div className="mt-4 p-3 bg-muted/50 rounded-lg flex items-center justify-between">
             <span className="text-sm font-medium">Reste à ventiler:</span>
-            <span className={`font-bold ${getValues('montant') - totalVentile === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-              {formatCurrency(getValues('montant') - totalVentile)}
+            <span className={`font-bold ${formValues.montant - totalVentile === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+              {formatCurrency(formValues.montant - totalVentile)}
             </span>
           </div>
 
@@ -270,7 +270,7 @@ export default function PaiementCreate() {
             <button onClick={() => setStep(2)} className="px-6 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">Précédent</button>
             <button
               onClick={() => setStep(4)}
-              disabled={getValues('montant') !== totalVentile}
+              disabled={formValues.montant !== totalVentile}
               className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               Suivant <ArrowRight size={16} />
