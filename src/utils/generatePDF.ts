@@ -25,7 +25,7 @@ function getEtablissement() {
 }
 
 // ==========================================
-// REÇU DE PAIEMENT — format A6 (105mm x 148mm)
+// REÇU DE PAIEMENT — format A6 (148mm x 105mm)
 // ==========================================
 export function generateReceiptPDF(data: {
   numeroRecu?: string;
@@ -42,13 +42,16 @@ export function generateReceiptPDF(data: {
   montantDuCompte?: number;
   ventilations: { eleveNom: string; montant: number }[];
 }) {
-  // A6 landscape: 148mm x 105mm
   const doc = new jsPDF({ format: [148, 105], unit: 'mm', orientation: 'landscape' });
   const etab = getEtablissement();
   const pw = 148;
-  const ph = 105;
   const receiptNum = data.numeroRecu || String(Math.floor(Math.random() * 9999)).padStart(4, '0');
-  const amountStr = fmtNum(data.montant);
+
+  // Safe number formatter for jsPDF
+  const amt = (n: number | undefined | null) => {
+    if (n === undefined || n === null || isNaN(n)) return '0';
+    return fmtNum(Math.round(n));
+  };
 
   // Get current user info
   let userName = '';
@@ -60,195 +63,184 @@ export function generateReceiptPDF(data: {
     }
   } catch {}
 
+  // Get logo from localStorage
+  let logoBase64: string | null = null;
+  try {
+    logoBase64 = localStorage.getItem('etablissement_logo');
+  } catch {}
+
   // Outer border
   doc.setDrawColor(60, 40, 120);
   doc.setLineWidth(0.6);
-  doc.rect(4, 4, pw - 8, ph - 8);
+  doc.rect(3, 3, pw - 6, 99);
 
-  let y = 12;
+  let y = 10;
 
-  // ─── Header: REÇU ... Date ... N° ───
-  doc.setFontSize(16);
+  // ─── Header: Logo + School name + Receipt info ───
+  const headerLeftX = 8;
+  if (logoBase64) {
+    try {
+      doc.addImage(logoBase64, 'PNG', headerLeftX, 5, 12, 12);
+    } catch {}
+  }
+
+  const nameX = logoBase64 ? 22 : 8;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(60, 40, 120);
+  doc.text((etab.nomEtablissement || 'SchoolFlow').toUpperCase(), nameX, y);
+  doc.setFontSize(5.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  const addrLine = [etab.adresse, etab.ville].filter(Boolean).join(', ');
+  if (addrLine) doc.text(addrLine, nameX, y + 3.5);
+  const contactLine = [etab.telephone, etab.email].filter(Boolean).join(' | ');
+  if (contactLine) doc.text(contactLine, nameX, y + 6.5);
+  doc.setTextColor(0, 0, 0);
+
+  // Right side: REÇU + N° + Date
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bolditalic');
   doc.setTextColor(60, 40, 120);
-  doc.text('REÇU', 8, y);
-
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
+  doc.text('REÇU', pw - 8, y, { align: 'right' });
   doc.setTextColor(0, 0, 0);
-  doc.text('Date', 50, y);
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.2);
-  doc.line(58, y + 0.5, 88, y + 0.5);
-  doc.setFont('helvetica', 'bold');
-  doc.text(data.date, 60, y);
-
+  doc.setFontSize(6.5);
   doc.setFont('helvetica', 'normal');
-  doc.text('N°.', 95, y);
-  doc.line(100, y + 0.5, pw - 8, y + 0.5);
-  doc.setFont('helvetica', 'bold');
-  doc.text(receiptNum, 102, y);
+  doc.text(`N° ${receiptNum}`, pw - 8, y + 4, { align: 'right' });
+  doc.text(`Date: ${data.date}`, pw - 8, y + 7.5, { align: 'right' });
 
-  y += 9;
+  y = 21;
+  doc.setDrawColor(60, 40, 120);
+  doc.setLineWidth(0.3);
+  doc.line(5, y, pw - 5, y);
+  y += 5;
 
-  // ─── Reçu de : [Nom Famille]    Montant [box] ───
+  // ─── Reçu de (famille) ───
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.text('Reçu de :', 8, y);
   doc.setFont('helvetica', 'normal');
   doc.text(data.familleNom, 24, y);
-  doc.line(24, y + 0.5, 85, y + 0.5);
 
-  // Montant box
+  // ─── Élève + Classe ───
   doc.setFont('helvetica', 'bold');
-  doc.text('Montant', 95, y);
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.4);
-  doc.rect(110, y - 4, 32, 6);
-  doc.setFontSize(8);
-  doc.text(`${amountStr} FCFA`, 112, y - 0.5);
-
-  y += 7;
-
-  // ─── Montant en lettres ───
-  doc.setFontSize(6);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(100, 100, 100);
-  doc.text('Montant', 8, y);
-  doc.setTextColor(0, 0, 0);
+  doc.text('Élève :', 80, y);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  const wordsStr = numberToWordsFr(data.montant) + ' francs CFA';
-  doc.text(wordsStr.charAt(0).toUpperCase() + wordsStr.slice(1), 22, y);
-  doc.setLineWidth(0.15);
-  doc.line(22, y + 0.5, pw - 8, y + 0.5);
+  doc.text(`${data.eleveNom} (${data.eleveClasse})`, 93, y);
+  y += 5;
 
-  y += 7;
-
-  // ─── Pour le paiement de [objet] ───
+  // ─── Objet: Pour paiement Scolarité - Trimestre X ───
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
-  doc.text('Pour le paiement de', 8, y);
+  doc.text('Objet :', 8, y);
   doc.setFont('helvetica', 'normal');
-  doc.text(data.objet || '...........................', 40, y);
-  doc.line(40, y + 0.5, pw - 8, y + 0.5);
+  doc.text(`Pour paiement ${data.objet || 'Scolarité'}`, 22, y);
+  y += 5;
 
-  y += 7;
+  // ─── Montant en chiffres ───
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.text('Montant :', 8, y);
+  doc.setFontSize(8);
+  doc.text(`${amt(data.montant)} FCFA`, 24, y);
+
+  // ─── Mode de paiement ───
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Mode :', 80, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(data.mode || '-', 92, y);
+  if (data.reference) {
+    doc.text(`(Réf: ${data.reference})`, 110, y);
+  }
+  y += 4;
+
+  // ─── Montant en lettres ───
+  doc.setFontSize(5.5);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(80, 80, 80);
+  const wordsStr = numberToWordsFr(data.montant) + ' francs CFA';
+  doc.text('Soit : ' + wordsStr.charAt(0).toUpperCase() + wordsStr.slice(1), 8, y);
+  doc.setTextColor(0, 0, 0);
+  y += 5;
 
   // ─── Ventilation par élève ───
-  if (data.ventilations.length > 0) {
+  if (data.ventilations.length > 1) {
     doc.setFontSize(6);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(80, 80, 80);
-    doc.text('Détail par élève :', 10, y);
+    doc.text('Ventilation :', 8, y);
     doc.setTextColor(0, 0, 0);
-    y += 4;
+    y += 3;
     doc.setFont('helvetica', 'normal');
     data.ventilations.forEach((v) => {
-      doc.text(`• ${v.eleveNom}`, 14, y);
-      doc.text(`${fmtNum(v.montant)} FCFA`, 75, y);
-      y += 3.5;
+      doc.text(`  • ${v.eleveNom}`, 10, y);
+      doc.text(`${amt(v.montant)} FCFA`, 65, y);
+      y += 3;
     });
     y += 1;
   }
 
-  // ─── de [date] à [date]        Payé par [ ] Espèces ... ───
-  doc.setFontSize(6.5);
-  doc.setFont('helvetica', 'normal');
-  doc.text('de', 10, y);
-  doc.line(16, y + 0.5, 33, y + 0.5);
-  doc.text('à', 35, y);
-  doc.line(39, y + 0.5, 56, y + 0.5);
-
-  // Payment mode checkboxes (right side)
-  const modes = [
-    { label: 'Espèces', key: 'Espèces' },
-    { label: 'Chèque No.', key: 'Chèque' },
-    { label: 'Virement', key: 'Virement' },
-    { label: 'Mobile Money', key: 'Mobile Money' },
-  ];
-  let modeY = y - 1;
-  doc.setFontSize(6);
-  doc.text('Payé par', 75, modeY + 1);
-  modeY += 1;
-  modes.forEach((m) => {
-    doc.text('[', 90, modeY);
-    if (data.mode === m.key) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('X', 91.5, modeY);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.text(`] ${m.label}`, 93, modeY);
-    if (m.key === 'Chèque' && data.reference) {
-      doc.text(data.reference, 113, modeY);
-    }
-    modeY += 3.5;
-  });
-
-  y = Math.max(y + 6, modeY + 1);
-
-  // ─── Reçu par: user name ───
-  doc.setFontSize(6.5);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Reçu par', 8, y);
-  doc.setFont('helvetica', 'normal');
-  doc.text(userName || 'x', 22, y);
-  doc.line(22, y + 0.5, 60, y + 0.5);
-  y += 4;
-
-  // Nom, Addresse, Tel, Email
-  doc.setFontSize(6);
-  doc.setFont('helvetica', 'italic');
-  doc.text('Nom', 10, y);
-  doc.setFont('helvetica', 'normal');
-  doc.text(userName || etab.directeur || etab.nomEtablissement || '', 20, y);
-  y += 3.5;
-  doc.setFont('helvetica', 'italic');
-  doc.text('Addresse', 10, y);
-  doc.setFont('helvetica', 'normal');
-  doc.text([etab.adresse, etab.ville].filter(Boolean).join(', ') || '', 24, y);
-  y += 3.5;
-  doc.setFont('helvetica', 'italic');
-  doc.text('Tel', 10, y);
-  doc.setFont('helvetica', 'normal');
-  doc.text(etab.telephone || '', 17, y);
-  doc.setFont('helvetica', 'italic');
-  doc.text('Email', 40, y);
-  doc.setFont('helvetica', 'normal');
-  doc.text(etab.email || '', 50, y);
-
-  // ─── Right side box: Montant du compte / Ce paiement / Solde dû ───
+  // ─── Financial Summary Box ───
   const boxX = 80;
-  const boxY = y - 8;
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.2);
+  const boxW = 62;
+  const boxY = y - 1;
+  const rowH = 4.5;
+  const rows = [
+    { label: 'Montant au compte', value: data.montantDuCompte },
+    { label: 'Paiement', value: data.montant },
+    { label: 'Solde actuel', value: data.soldeDu },
+    { label: 'Date de paiement', value: null, text: data.date },
+    { label: 'Paiement restant', value: data.soldeDu !== undefined ? data.soldeDu : undefined },
+  ];
 
-  const rowH = 5;
-  doc.rect(boxX, boxY, 62, rowH * 3);
-  doc.line(boxX, boxY + rowH, boxX + 62, boxY + rowH);
-  doc.line(boxX, boxY + rowH * 2, boxX + 62, boxY + rowH * 2);
-  doc.line(boxX + 30, boxY, boxX + 30, boxY + rowH * 3);
+  doc.setDrawColor(60, 40, 120);
+  doc.setLineWidth(0.3);
+  doc.rect(boxX, boxY, boxW, rowH * rows.length);
+  rows.forEach((_, i) => {
+    if (i > 0) doc.line(boxX, boxY + rowH * i, boxX + boxW, boxY + rowH * i);
+  });
+  doc.line(boxX + 30, boxY, boxX + 30, boxY + rowH * rows.length);
 
   doc.setFontSize(5.5);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Montant du compte', boxX + 2, boxY + 3.5);
-  doc.text('Ce paiement', boxX + 2, boxY + rowH + 3.5);
-  doc.text('Solde dû', boxX + 2, boxY + rowH * 2 + 3.5);
+  rows.forEach((r, i) => {
+    const ry = boxY + rowH * i + 3.2;
+    doc.setFont('helvetica', 'normal');
+    doc.text(r.label, boxX + 2, ry);
+    doc.setFont('helvetica', 'bold');
+    if (r.text) {
+      doc.text(r.text, boxX + 32, ry);
+    } else if (r.value !== undefined && r.value !== null) {
+      doc.text(`${amt(r.value)} FCFA`, boxX + 32, ry);
+    } else {
+      doc.text('-', boxX + 32, ry);
+    }
+  });
 
+  // ─── Left side: Reçu par ───
+  doc.setFontSize(6.5);
   doc.setFont('helvetica', 'bold');
-  const fmt = (n: number) => fmtNum(n) + ' FCFA';
-  doc.text(data.montantDuCompte !== undefined ? fmt(data.montantDuCompte) : '-', boxX + 32, boxY + 3.5);
-  doc.text(fmt(data.montant), boxX + 32, boxY + rowH + 3.5);
-  doc.text(data.soldeDu !== undefined ? fmt(data.soldeDu) : '-', boxX + 32, boxY + rowH * 2 + 3.5);
+  doc.text('Reçu par :', 8, boxY + 3);
+  doc.setFont('helvetica', 'normal');
+  doc.text(userName || '-', 24, boxY + 3);
 
-  if (data.observation) {
-    y += 5;
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'italic');
-    doc.text(`Obs: ${data.observation}`, 8, y);
-  }
+  // Contact under "Reçu par"
+  doc.setFontSize(5);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(100, 100, 100);
+  if (etab.telephone) doc.text(`Tél: ${etab.telephone}`, 8, boxY + 7);
+  if (etab.email) doc.text(etab.email, 8, boxY + 10);
+  doc.setTextColor(0, 0, 0);
 
-  doc.save(`recu-${data.familleNom}-${data.date}.pdf`);
+  // ─── Footer ───
+  const footY = 98;
+  doc.setFontSize(4.5);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(120, 120, 120);
+  doc.text('Ce reçu fait foi de paiement — Conservez-le précieusement', pw / 2, footY, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  doc.save(`recu-${data.familleNom.replace(/\s/g, '_')}-${data.date}.pdf`);
 }
 
 // ==========================================
