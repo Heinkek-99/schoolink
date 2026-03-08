@@ -9,7 +9,8 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { Banknote } from 'lucide-react';
 import { generateStudentCardPDF } from '@/utils/generatePDF';
-import { ANNEE_SCOLAIRE, getPaymentStatus } from '@/utils/constants';
+import { getPaymentStatus } from '@/utils/constants';
+import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
 
 export default function EleveDetail() {
   const { id } = useParams<{ id: string }>();
