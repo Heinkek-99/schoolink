@@ -65,7 +65,31 @@ export default function SettingsPage() {
         etabForm.reset(JSON.parse(saved));
       } catch {}
     }
+    const savedLogo = localStorage.getItem('etablissement_logo');
+    if (savedLogo) setLogoPreview(savedLogo);
   }, []);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 500_000) {
+        toast.error('Le logo ne doit pas dépasser 500 Ko');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setLogoPreview(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setLogoPreview(null);
+    localStorage.removeItem('etablissement_logo');
+    if (logoInputRef.current) logoInputRef.current.value = '';
+  };
 
   const onSaveEtablissement = (data: EtablissementForm) => {
     localStorage.setItem('etablissement', JSON.stringify(data));
