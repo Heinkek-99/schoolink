@@ -146,7 +146,7 @@ export function generateReceiptPDF(data: {
     doc.setFont('helvetica', 'normal');
     data.ventilations.forEach((v) => {
       doc.text(`• ${v.eleveNom}`, 14, y);
-      doc.text(`${new Intl.NumberFormat('fr-FR').format(v.montant)} FCFA`, 75, y);
+      doc.text(`${fmtNum(v.montant)} FCFA`, 75, y);
       y += 3.5;
     });
     y += 1;
