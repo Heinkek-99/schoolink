@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer } from 'lucide-react';
+import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer, Download } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
@@ -11,7 +11,9 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { generateAllStudentCardsPDF } from '@/utils/generatePDF';
 import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
+import { elevesApi } from '@/api/eleves.api';
 import type { Eleve } from '@/types/eleve.types';
+import toast from 'react-hot-toast';
 
 function ActionMenu({ eleve, canEdit, canDelete }: {
   eleve: Eleve;
