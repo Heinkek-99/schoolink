@@ -22,6 +22,12 @@ export interface EleveDossier {
   photoPath?: string;
   classe: string;
   famille: string;
+  nationalite?: string;
+  groupeSanguin?: string;
+  allergies?: string;
+  contactUrgence?: string;
+  remarques?: string;
+  dateInscription?: string;
   frais: EleveFrais[];
   totalDu: number;
   totalPaye: number;
@@ -53,9 +59,15 @@ export interface CreateEleveRequest {
   prenom: string;
   dateNaissance: string;
   lieuNaissance: string;
-  sexe: string;
+  sexe: string | number;
   classeId: string;
   familleId: string;
+  nationalite?: string;
+  groupeSanguin?: string;
+  allergies?: string;
+  contactUrgence?: string;
+  remarques?: string;
+  photo?: File;
 }
 
 export interface UpdateEleveRequest {
@@ -65,4 +77,10 @@ export interface UpdateEleveRequest {
   lieuNaissance: string;
   sexe: string;
   classeId?: string;
+  nationalite?: string;
+  groupeSanguin?: string;
+  allergies?: string;
+  contactUrgence?: string;
+  remarques?: string;
+  photo?: File;
 }
