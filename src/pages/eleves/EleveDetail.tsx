@@ -109,10 +109,10 @@ export default function EleveDetail() {
             )}
             {isAdmin && (
               <button
-                onClick={() => setShowArchiveConfirm(true)}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors"
               >
-                <Archive size={16} /> Archiver
+                <Trash2 size={16} /> Supprimer
               </button>
             )}
           </div>
