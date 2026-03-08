@@ -93,6 +93,13 @@ export default function SettingsPage() {
 
   const onSaveEtablissement = (data: EtablissementForm) => {
     localStorage.setItem('etablissement', JSON.stringify(data));
+    if (logoPreview) {
+      localStorage.setItem('etablissement_logo', logoPreview);
+    } else {
+      localStorage.removeItem('etablissement_logo');
+    }
+    // Dispatch event so Sidebar updates immediately
+    window.dispatchEvent(new Event('etablissement-updated'));
     toast.success("Informations de l'établissement enregistrées");
   };
 
