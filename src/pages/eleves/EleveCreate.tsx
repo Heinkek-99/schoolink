@@ -71,8 +71,21 @@ export default function EleveCreate() {
   };
 
   const handleCreateFamille = (data: NewFamilleForm) => {
-    createFamilleMutation.mutate(data as any, {
+    // Clean empty strings to undefined for optional fields
+    const cleanData: Record<string, any> = {
+      nomPere: data.nomPere,
+      telephonePrincipal: data.telephonePrincipal,
+    };
+    if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
+    if (data.emailPere) cleanData.emailPere = data.emailPere;
+    if (data.nomMere) cleanData.nomMere = data.nomMere;
+    if (data.adresse) cleanData.adresse = data.adresse;
+    if (data.ville) cleanData.ville = data.ville;
+
+    console.log('[CreateFamille] Sending:', cleanData);
+    createFamilleMutation.mutate(cleanData as any, {
       onSuccess: (newFamille: any) => {
+        console.log('[CreateFamille] Response:', newFamille);
         // The API may return the id directly or as an object
         const familleId = typeof newFamille === 'string' ? newFamille : newFamille?.id;
         if (familleId) {
@@ -80,7 +93,12 @@ export default function EleveCreate() {
           setCreatedFamilleLabel(`${data.nomPere} ${data.prenomPere || ''} — ${data.telephonePrincipal}`);
           setShowNewFamille(false);
           formFamille.reset();
+        } else {
+          console.error('[CreateFamille] Could not extract familleId from:', newFamille);
         }
+      },
+      onError: (err: any) => {
+        console.error('[CreateFamille] Error:', err);
       },
     });
   };
