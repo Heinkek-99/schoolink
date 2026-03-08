@@ -236,7 +236,7 @@ export function generateReceiptPDF(data: {
   doc.text('Solde dû', boxX + 2, boxY + rowH * 2 + 3.5);
 
   doc.setFont('helvetica', 'bold');
-  const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
+  const fmt = (n: number) => fmtNum(n) + ' FCFA';
   doc.text(data.montantDuCompte !== undefined ? fmt(data.montantDuCompte) : '-', boxX + 32, boxY + 3.5);
   doc.text(fmt(data.montant), boxX + 32, boxY + rowH + 3.5);
   doc.text(data.soldeDu !== undefined ? fmt(data.soldeDu) : '-', boxX + 32, boxY + rowH * 2 + 3.5);
