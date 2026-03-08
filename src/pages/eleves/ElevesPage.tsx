@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
