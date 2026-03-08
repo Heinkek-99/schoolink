@@ -23,10 +23,10 @@ export function AppRouter() {
       <Route path="/familles" element={<ProtectedRoute><AppLayout><FamillesPage /></AppLayout></ProtectedRoute>} />
       <Route path="/familles/:id" element={<ProtectedRoute><AppLayout><FamilleDetail /></AppLayout></ProtectedRoute>} />
       <Route path="/eleves" element={<ProtectedRoute><AppLayout><ElevesPage /></AppLayout></ProtectedRoute>} />
-      <Route path="/eleves/nouveau" element={<ProtectedRoute><AppLayout><EleveCreate /></AppLayout></ProtectedRoute>} />
+      <Route path="/eleves/nouveau" element={<ProtectedRoute requiredPermission="eleves"><AppLayout><EleveCreate /></AppLayout></ProtectedRoute>} />
       <Route path="/eleves/:id" element={<ProtectedRoute><AppLayout><EleveDetail /></AppLayout></ProtectedRoute>} />
       <Route path="/finances" element={<ProtectedRoute><AppLayout><FinancesPage /></AppLayout></ProtectedRoute>} />
-      <Route path="/finances/paiement" element={<ProtectedRoute><AppLayout><PaiementCreate /></AppLayout></ProtectedRoute>} />
+      <Route path="/finances/paiement" element={<ProtectedRoute requiredPermission="paiements"><AppLayout><PaiementCreate /></AppLayout></ProtectedRoute>} />
       <Route path="/academique" element={<ProtectedRoute><AppLayout><AcademiquePage /></AppLayout></ProtectedRoute>} />
       <Route path="/parametres" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
 

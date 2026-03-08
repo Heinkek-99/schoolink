@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTypeFrais, useCreateTypeFrais } from '@/hooks/usePaiements';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useNotificationStore } from '@/store/notificationStore';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { TableSkeleton } from '@/components/shared/Skeletons';
 import toast from 'react-hot-toast';
@@ -32,6 +34,8 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<'etablissement' | 'typefrais' | 'utilisateurs' | 'notifications'>('etablissement');
   const { data: typeFrais, isLoading: typeFraisLoading } = useTypeFrais();
   const createTypeFraisMutation = useCreateTypeFrais();
+  const { canCreate, canEdit, isAdmin, isDirecteur } = usePermissions();
+  const notifications = useNotificationStore((s) => s.notifications);
   const [showNewTypeFrais, setShowNewTypeFrais] = useState(false);
 
   const etabForm = useForm<EtablissementForm>({
@@ -80,9 +84,9 @@ export default function SettingsPage() {
 
   const sections = [
     { key: 'etablissement' as const, label: 'Établissement', desc: "Informations de l'école", icon: School },
-    { key: 'typefrais' as const, label: 'Types de frais', desc: 'Gérer les frais scolaires', icon: CreditCard },
-    { key: 'utilisateurs' as const, label: 'Utilisateurs', desc: 'Gestion des comptes', icon: Users },
-    { key: 'notifications' as const, label: 'Notifications', desc: 'Préférences de notification', icon: Bell },
+    ...(canCreate('typefrais') || isAdmin ? [{ key: 'typefrais' as const, label: 'Types de frais', desc: 'Gérer les frais scolaires', icon: CreditCard }] : []),
+    ...(isAdmin ? [{ key: 'utilisateurs' as const, label: 'Utilisateurs', desc: 'Gestion des comptes', icon: Users }] : []),
+    { key: 'notifications' as const, label: 'Notifications', desc: 'Historique des événements', icon: Bell },
   ];
 
   return (
@@ -229,10 +233,26 @@ export default function SettingsPage() {
           )}
 
           {activeSection === 'notifications' && (
-            <div className="bg-card rounded-xl border shadow-sm p-8 text-center text-muted-foreground">
-              <Bell size={48} strokeWidth={1} className="mx-auto mb-3" />
-              <p className="font-medium">Préférences de notification</p>
-              <p className="text-sm">Fonctionnalité à venir</p>
+            <div className="bg-card rounded-xl border shadow-sm p-6">
+              <h2 className="text-lg font-semibold mb-4">Historique des événements</h2>
+              {!notifications.length ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  <Bell size={48} strokeWidth={1} className="mx-auto mb-3 opacity-50" />
+                  <p>Aucune notification</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                  {notifications.map((n) => (
+                    <div key={n.id} className={`p-3 rounded-lg border text-sm ${!n.read ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'}`}>
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{n.title}</p>
+                        <span className="text-[11px] text-muted-foreground">{new Date(n.timestamp).toLocaleString('fr-FR')}</span>
+                      </div>
+                      <p className="text-muted-foreground text-xs mt-0.5">{n.message}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

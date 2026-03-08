@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, ArrowRight, Check, Banknote, Users as UsersIcon, ListChecks, FileCheck } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { useNotificationStore } from '@/store/notificationStore';
 import { useFamilles } from '@/hooks/useFamilles';
 import { useFamille } from '@/hooks/useFamilles';
 import { useCreatePaiement } from '@/hooks/usePaiements';
@@ -26,6 +27,7 @@ export default function PaiementCreate() {
   const navigate = useNavigate();
   const { data: familles } = useFamilles();
   const createMutation = useCreatePaiement();
+  const addNotification = useNotificationStore((s) => s.addNotification);
 
   const [step, setStep] = useState(1);
   const [selectedFamilleId, setSelectedFamilleId] = useState<string | null>(null);
@@ -108,6 +110,11 @@ export default function PaiementCreate() {
       },
       {
         onSuccess: () => {
+          addNotification({
+            type: 'paiement',
+            title: 'Paiement enregistré',
+            message: `${formatCurrency(values.montant)} reçu de ${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
+          });
           generateReceiptPDF({
             familleNom: `${familleDetail?.nomPere} ${familleDetail?.prenomPere}`,
             date: values.date,

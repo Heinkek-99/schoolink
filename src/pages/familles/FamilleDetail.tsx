@@ -9,6 +9,7 @@ import { usePaiementsByFamille } from '@/hooks/usePaiements';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
 import { KpiSkeleton } from '@/components/shared/Skeletons';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { getRecoveryRate } from '@/utils/constants';
@@ -34,6 +35,7 @@ export default function FamilleDetail() {
   const { data: famille, isLoading } = useFamille(id!);
   const { data: paiements } = usePaiementsByFamille(id!);
   const updateMutation = useUpdateFamille();
+  const { canEdit } = usePermissions();
   const [activeTab, setActiveTab] = useState<'enfants' | 'paiements' | 'informations'>('enfants');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -227,7 +229,7 @@ export default function FamilleDetail() {
             <>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Informations de la famille</h3>
-                <button onClick={startEditing} className="text-sm text-primary hover:underline">Modifier</button>
+                {canEdit('familles') && <button onClick={startEditing} className="text-sm text-primary hover:underline">Modifier</button>}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div><span className="text-muted-foreground">Nom du père:</span> <strong>{famille.nomPere}</strong></div>

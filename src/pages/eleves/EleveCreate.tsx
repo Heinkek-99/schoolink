@@ -7,8 +7,9 @@ import { ArrowLeft, ArrowRight, Check, User, Users, ClipboardCheck, Plus } from 
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useCreateEleve, useClasses } from '@/hooks/useEleves';
 import { useFamilles, useCreateFamille } from '@/hooks/useFamilles';
-import { ANNEE_SCOLAIRE } from '@/utils/constants';
 import { TableSkeleton } from '@/components/shared/Skeletons';
+import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
+import { useNotificationStore } from '@/store/notificationStore';
 
 const step1Schema = z.object({
   nom: z.string().min(1, 'Nom requis').max(100),
@@ -45,6 +46,8 @@ export default function EleveCreate() {
   const { data: familles, isLoading: famillesLoading } = useFamilles();
   const createMutation = useCreateEleve();
   const createFamilleMutation = useCreateFamille();
+  const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
+  const addNotification = useNotificationStore((s) => s.addNotification);
 
   const form1 = useForm<Step1>({ resolver: zodResolver(step1Schema), defaultValues: step1Data || undefined });
   const form2 = useForm<Step2>({ resolver: zodResolver(step2Schema) });
@@ -88,7 +91,10 @@ export default function EleveCreate() {
         classeId: step2Values.classeId,
         familleId: step2Values.familleId,
       },
-      { onSuccess: () => navigate('/eleves') }
+      { onSuccess: () => {
+        addNotification({ type: 'inscription', title: 'Nouvelle inscription', message: `${step1Data.prenom} ${step1Data.nom} inscrit(e) avec succès` });
+        navigate('/eleves');
+      } }
     );
   };
 
@@ -262,7 +268,7 @@ export default function EleveCreate() {
 
             <div>
               <label className="text-sm font-medium mb-1 block">Année scolaire</label>
-              <input value={ANNEE_SCOLAIRE} readOnly className="w-full px-3 py-2 border rounded-lg bg-muted text-sm" />
+              <input value={anneeScolaire} readOnly className="w-full px-3 py-2 border rounded-lg bg-muted text-sm" />
             </div>
           </div>
           <div className="flex justify-between mt-6">
@@ -287,7 +293,7 @@ export default function EleveCreate() {
             <p><span className="text-muted-foreground">Sexe:</span> <strong>{step1Data?.sexe === 'M' ? 'Masculin' : 'Féminin'}</strong></p>
             <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille?.nomPere} {selectedFamille?.prenomPere}</strong></p>
             <p><span className="text-muted-foreground">Classe:</span> <strong>{selectedClasse?.nom || '-'}</strong></p>
-            <p><span className="text-muted-foreground">Année scolaire:</span> <strong>{ANNEE_SCOLAIRE}</strong></p>
+            <p><span className="text-muted-foreground">Année scolaire:</span> <strong>{anneeScolaire}</strong></p>
           </div>
           <div className="flex justify-between mt-6">
             <button type="button" onClick={() => setStep(2)} className="px-6 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">

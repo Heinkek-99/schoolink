@@ -2,6 +2,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { KpiSkeleton } from '@/components/shared/Skeletons';
 import { useDashboardStats } from '@/hooks/useDashboard';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Banknote, AlertTriangle, Percent, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -10,6 +11,7 @@ import { formatCurrency } from '@/utils/formatCurrency';
 export default function FinancesPage() {
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats();
+  const { canCreate } = usePermissions();
 
   const classeChartData = stats?.statistiquesParClasse
     ?.filter((c) => c.nombreEleves > 0)
@@ -18,12 +20,14 @@ export default function FinancesPage() {
   return (
     <div>
       <PageHeader title="Finances" subtitle="Tableau de bord financier">
-        <button
-          onClick={() => navigate('/finances/paiement')}
-          className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90 transition-colors"
-        >
-          <Plus size={18} /> Nouveau paiement
-        </button>
+        {canCreate('paiements') && (
+          <button
+            onClick={() => navigate('/finances/paiement')}
+            className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90 transition-colors"
+          >
+            <Plus size={18} /> Nouveau paiement
+          </button>
+        )}
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

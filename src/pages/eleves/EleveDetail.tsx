@@ -9,13 +9,15 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { Banknote } from 'lucide-react';
 import { generateStudentCardPDF } from '@/utils/generatePDF';
-import { ANNEE_SCOLAIRE, getPaymentStatus } from '@/utils/constants';
+import { getPaymentStatus } from '@/utils/constants';
+import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
 
 export default function EleveDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: eleve, isLoading } = useEleve(id!);
   const [activeTab, setActiveTab] = useState<'informations' | 'finances' | 'notes' | 'documents'>('informations');
+  const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
   if (isLoading) return <div className="grid grid-cols-3 gap-4">{Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)}</div>;
   if (!eleve) return <div className="text-center py-16 text-muted-foreground">Élève non trouvé</div>;
@@ -135,7 +137,7 @@ export default function EleveDetail() {
       {activeTab === 'documents' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { label: "Carte d'élève", icon: CreditCard, action: () => generateStudentCardPDF({ nom: eleve.nom, prenom: eleve.prenom, matricule: eleve.matricule, classe: eleve.classe || '', anneeScolaire: ANNEE_SCOLAIRE }) },
+            { label: "Carte d'élève", icon: CreditCard, action: () => generateStudentCardPDF({ nom: eleve.nom, prenom: eleve.prenom, matricule: eleve.matricule, classe: eleve.classe || '', anneeScolaire }) },
             { label: "Certificat de scolarité", icon: FileText, action: () => {} },
             { label: "Bulletin financier", icon: BarChart3, action: () => {} },
             { label: "Bulletin de notes", icon: ClipboardList, action: () => {} },
