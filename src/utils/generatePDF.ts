@@ -745,44 +745,9 @@ export function generateCertificatScolaritePDF(data: {
   doc.setLineWidth(0.3);
   doc.rect(12, 12, pw - 24, 273);
 
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 100, 0);
-  doc.text('RÉPUBLIQUE DU CAMEROUN', pw / 2, 25, { align: 'center' });
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(100, 100, 100);
-  doc.text('Paix - Travail - Patrie', pw / 2, 30, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
+  let y = drawPdfHeader(doc, pw, etab, 'CERTIFICAT DE SCOLARITÉ', `Année scolaire ${data.anneeScolaire}`);
+  y += 10;
 
-  doc.setDrawColor(0, 100, 0);
-  doc.setLineWidth(0.5);
-  doc.line(50, 34, pw - 50, 34);
-
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 100, 0);
-  doc.text((etab.nomEtablissement || 'SCHOOLFLOW').toUpperCase(), pw / 2, 44, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  const addrC = [etab.adresse, etab.ville].filter(Boolean).join(', ');
-  if (addrC) doc.text(addrC, pw / 2, 50, { align: 'center' });
-  const contactLine = [etab.telephone ? `Tél: ${etab.telephone}` : '', etab.email || ''].filter(Boolean).join(' — ');
-  if (contactLine) doc.text(contactLine, pw / 2, 55, { align: 'center' });
-
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(30, 58, 95);
-  doc.text('CERTIFICAT DE SCOLARITÉ', pw / 2, 75, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'italic');
-  doc.text(`Année scolaire ${data.anneeScolaire}`, pw / 2, 82, { align: 'center' });
-
-  let y = 100;
   const isMale = data.sexe === '1' || data.sexe === 'M' || data.sexe === 'Masculin';
   const article = isMale ? '' : 'e';
   const pronoun = isMale ? 'M.' : 'Mlle';
