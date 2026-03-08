@@ -10,7 +10,7 @@ export function useDashboardStats() {
 
 export function useFamillesImpayes() {
   return useQuery({
-    queryKey: ['dashboard', 'familles-impayes'],
-    queryFn: dashboardApi.getFamillesImpayes,
+    queryKey: ['dashboard', 'top-impayes'],
+    queryFn: dashboardApi.getTopImpayes,
   });
 }
