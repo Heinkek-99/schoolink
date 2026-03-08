@@ -102,15 +102,19 @@ export default function PaiementCreate() {
 
     const isoDate = new Date(formValues.date + 'T00:00:00').toISOString();
 
+    const payload = {
+      familleId: selectedFamilleId!,
+      date: isoDate,
+      montant: formValues.montant,
+      mode: formValues.mode,
+      reference: formValues.reference,
+      ventilations: ventilationsList,
+    };
+    console.log('[PaiementCreate] formValues:', formValues);
+    console.log('[PaiementCreate] payload:', JSON.stringify(payload, null, 2));
+
     createMutation.mutate(
-      {
-        familleId: selectedFamilleId!,
-        date: isoDate,
-        montant: formValues.montant,
-        mode: formValues.mode,
-        reference: formValues.reference,
-        ventilations: ventilationsList,
-      },
+      payload,
       {
         onSuccess: () => {
           addNotification({
