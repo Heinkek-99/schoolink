@@ -310,6 +310,7 @@ export default function FamilleDetail() {
                 <div><span className="text-muted-foreground">Nom du père:</span> <strong>{famille.nomPere}</strong></div>
                 <div><span className="text-muted-foreground">Prénom du père:</span> <strong>{famille.prenomPere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Téléphone principal:</span> <strong>{famille.telephonePrincipal}</strong></div>
+                <div><span className="text-muted-foreground">Téléphone du père:</span> <strong>{famille.telephonePere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Email:</span> <strong>{famille.emailPere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Nom de la mère:</span> <strong>{famille.nomMere || '-'}</strong></div>
                 <div><span className="text-muted-foreground">Prénom de la mère:</span> <strong>{famille.prenomMere || '-'}</strong></div>
