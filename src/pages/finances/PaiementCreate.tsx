@@ -12,6 +12,7 @@ import { useCreatePaiement } from '@/hooks/usePaiements';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { PAYMENT_MODES } from '@/utils/constants';
 import { generateReceiptPDF } from '@/utils/generatePDF';
+import { MODE_PAIEMENT_MAP } from '@/types/paiement.types';
 import type { Famille } from '@/types/famille.types';
 
 const paiementSchema = z.object({
@@ -94,23 +95,18 @@ export default function PaiementCreate() {
   const handleConfirm = () => {
     const ventilationsList = Object.entries(ventilations)
       .filter(([, v]) => v > 0)
-      .map(([eleveId, montant]) => ({
-        eleveId,
-        eleveNom: familleDetail?.enfants?.find((e) => e.id === eleveId)?.prenom || '',
-        montant,
-      }));
+      .map(([eleveId, montant]) => ({ eleveId, montant }));
 
     const isoDate = new Date(formValues.date + 'T00:00:00').toISOString();
 
     const payload = {
       familleId: selectedFamilleId!,
-      date: isoDate,
-      montant: formValues.montant,
-      mode: formValues.mode,
+      datePaiement: isoDate,
+      montantTotal: formValues.montant,
+      modePaiement: MODE_PAIEMENT_MAP[formValues.mode] ?? 0,
       reference: formValues.reference,
       ventilations: ventilationsList,
     };
-    console.log('[PaiementCreate] formValues:', formValues);
     console.log('[PaiementCreate] payload:', JSON.stringify(payload, null, 2));
 
     createMutation.mutate(
@@ -128,7 +124,10 @@ export default function PaiementCreate() {
             montant: formValues.montant,
             mode: formValues.mode,
             reference: formValues.reference,
-            ventilations: ventilationsList,
+            ventilations: ventilationsList.map((v) => ({
+              eleveNom: familleDetail?.enfants?.find((e) => e.id === v.eleveId)?.prenom || '',
+              montant: v.montant,
+            })),
           });
           navigate('/finances');
         },
