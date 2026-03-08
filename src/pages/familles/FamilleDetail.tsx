@@ -51,6 +51,7 @@ export default function FamilleDetail() {
         nomPere: famille.nomPere,
         prenomPere: famille.prenomPere || '',
         telephonePrincipal: famille.telephonePrincipal,
+        telephonePere: famille.telephonePere || '',
         emailPere: famille.emailPere || '',
         nomMere: famille.nomMere || '',
         prenomMere: famille.prenomMere || '',
