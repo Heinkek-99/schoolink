@@ -27,6 +27,7 @@ export default function PaiementCreate() {
   const navigate = useNavigate();
   const { data: familles } = useFamilles();
   const createMutation = useCreatePaiement();
+  const addNotification = useNotificationStore((s) => s.addNotification);
 
   const [step, setStep] = useState(1);
   const [selectedFamilleId, setSelectedFamilleId] = useState<string | null>(null);
