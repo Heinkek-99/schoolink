@@ -1,6 +1,12 @@
 import jsPDF from 'jspdf';
 import { numberToWordsFr } from './numberToWords';
 
+// jsPDF's built-in fonts can't render non-breaking spaces (\u00A0) from Intl.NumberFormat
+// Replace them with regular spaces
+function fmtNum(n: number): string {
+  return new Intl.NumberFormat('fr-FR').format(n).replace(/\u00A0/g, ' ');
+}
+
 function getEtablissement() {
   try {
     const saved = localStorage.getItem('etablissement');
@@ -42,7 +48,7 @@ export function generateReceiptPDF(data: {
   const pw = 148;
   const ph = 105;
   const receiptNum = data.numeroRecu || String(Math.floor(Math.random() * 9999)).padStart(4, '0');
-  const amountStr = new Intl.NumberFormat('fr-FR').format(data.montant);
+  const amountStr = fmtNum(data.montant);
 
   // Get current user info
   let userName = '';
@@ -140,7 +146,7 @@ export function generateReceiptPDF(data: {
     doc.setFont('helvetica', 'normal');
     data.ventilations.forEach((v) => {
       doc.text(`• ${v.eleveNom}`, 14, y);
-      doc.text(`${new Intl.NumberFormat('fr-FR').format(v.montant)} FCFA`, 75, y);
+      doc.text(`${fmtNum(v.montant)} FCFA`, 75, y);
       y += 3.5;
     });
     y += 1;
@@ -230,7 +236,7 @@ export function generateReceiptPDF(data: {
   doc.text('Solde dû', boxX + 2, boxY + rowH * 2 + 3.5);
 
   doc.setFont('helvetica', 'bold');
-  const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
+  const fmt = (n: number) => fmtNum(n) + ' FCFA';
   doc.text(data.montantDuCompte !== undefined ? fmt(data.montantDuCompte) : '-', boxX + 32, boxY + 3.5);
   doc.text(fmt(data.montant), boxX + 32, boxY + rowH + 3.5);
   doc.text(data.soldeDu !== undefined ? fmt(data.soldeDu) : '-', boxX + 32, boxY + rowH * 2 + 3.5);
@@ -573,7 +579,7 @@ export function generateBulletinFinancierPDF(data: {
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n);
+  const fmt = (n: number) => fmtNum(n);
 
   data.frais.forEach((f) => {
     const solde = f.montant - f.montantPaye;
