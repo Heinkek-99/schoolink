@@ -37,6 +37,8 @@ export default function SettingsPage() {
   const { canCreate, canEdit, isAdmin, isDirecteur } = usePermissions();
   const notifications = useNotificationStore((s) => s.notifications);
   const [showNewTypeFrais, setShowNewTypeFrais] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const etabForm = useForm<EtablissementForm>({
     resolver: zodResolver(etablissementSchema),
