@@ -27,7 +27,8 @@ const step2Schema = z.object({
 const newFamilleSchema = z.object({
   nomPere: z.string().min(1, 'Nom requis'),
   prenomPere: z.string().default(''),
-  telephonePrincipal: z.string().min(1, 'Téléphone requis'),
+  telephonePrincipal: z.string().min(1, 'Téléphone principal requis'),
+  telephonePere: z.string().optional(),
   emailPere: z.string().email('Email invalide').optional().or(z.literal('')),
   nomMere: z.string().optional(),
   adresse: z.string().optional(),
