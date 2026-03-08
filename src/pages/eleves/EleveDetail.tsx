@@ -34,7 +34,7 @@ export default function EleveDetail() {
   const updateMutation = useUpdateEleve();
   const { canEdit, isAdmin } = usePermissions();
   const [activeTab, setActiveTab] = useState<'informations' | 'finances' | 'notes' | 'documents'>('informations');
-  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
