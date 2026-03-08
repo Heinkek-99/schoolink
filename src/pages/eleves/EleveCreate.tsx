@@ -7,8 +7,9 @@ import { ArrowLeft, ArrowRight, Check, User, Users, ClipboardCheck, Plus } from 
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useCreateEleve, useClasses } from '@/hooks/useEleves';
 import { useFamilles, useCreateFamille } from '@/hooks/useFamilles';
-import { ANNEE_SCOLAIRE } from '@/utils/constants';
 import { TableSkeleton } from '@/components/shared/Skeletons';
+import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
+import { useNotificationStore } from '@/store/notificationStore';
 
 const step1Schema = z.object({
   nom: z.string().min(1, 'Nom requis').max(100),
