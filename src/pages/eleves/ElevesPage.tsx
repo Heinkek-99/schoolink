@@ -9,6 +9,8 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { useEleves, useClasses, useDeleteEleve } from '@/hooks/useEleves';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { generateAllStudentCardsPDF } from '@/utils/generatePDF';
+import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
 import type { Eleve } from '@/types/eleve.types';
 
 function ActionMenu({ eleve, canEdit, canDelete }: {
