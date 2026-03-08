@@ -293,7 +293,7 @@ export default function EleveCreate() {
             <p><span className="text-muted-foreground">Sexe:</span> <strong>{step1Data?.sexe === 'M' ? 'Masculin' : 'Féminin'}</strong></p>
             <p><span className="text-muted-foreground">Famille:</span> <strong>{selectedFamille?.nomPere} {selectedFamille?.prenomPere}</strong></p>
             <p><span className="text-muted-foreground">Classe:</span> <strong>{selectedClasse?.nom || '-'}</strong></p>
-            <p><span className="text-muted-foreground">Année scolaire:</span> <strong>{ANNEE_SCOLAIRE}</strong></p>
+            <p><span className="text-muted-foreground">Année scolaire:</span> <strong>{anneeScolaire}</strong></p>
           </div>
           <div className="flex justify-between mt-6">
             <button type="button" onClick={() => setStep(2)} className="px-6 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
