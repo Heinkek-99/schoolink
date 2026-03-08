@@ -36,7 +36,27 @@ export const elevesApi = {
     return response.data;
   },
   update: async (id: string, data: UpdateEleveRequest): Promise<EleveDossier> => {
-    const response = await api.put(`/api/Eleves/${id}`, data);
+    if (data.photo) {
+      const formData = new FormData();
+      formData.append('nom', data.nom);
+      formData.append('prenom', data.prenom);
+      formData.append('dateNaissance', data.dateNaissance);
+      formData.append('lieuNaissance', data.lieuNaissance);
+      formData.append('sexe', String(data.sexe));
+      if (data.classeId) formData.append('classeId', data.classeId);
+      if (data.nationalite) formData.append('nationalite', data.nationalite);
+      if (data.groupeSanguin) formData.append('groupeSanguin', data.groupeSanguin);
+      if (data.allergies) formData.append('allergies', data.allergies);
+      if (data.contactUrgence) formData.append('contactUrgence', data.contactUrgence);
+      if (data.remarques) formData.append('remarques', data.remarques);
+      formData.append('photo', data.photo);
+      const response = await api.put(`/api/Eleves/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    }
+    const { photo, ...jsonData } = data;
+    const response = await api.put(`/api/Eleves/${id}`, jsonData);
     return response.data;
   },
   getClasses: async (): Promise<Classe[]> => {

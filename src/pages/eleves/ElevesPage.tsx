@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer } from 'lucide-react';
+import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer, Download } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
@@ -11,7 +11,9 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { generateAllStudentCardsPDF } from '@/utils/generatePDF';
 import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
+import { elevesApi } from '@/api/eleves.api';
 import type { Eleve } from '@/types/eleve.types';
+import toast from 'react-hot-toast';
 
 function ActionMenu({ eleve, canEdit, canDelete }: {
   eleve: Eleve;
@@ -100,6 +102,7 @@ export default function ElevesPage() {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [search, setSearch] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
+  const [exporting, setExporting] = useState(false);
   const anneeScolaire = useAnneeScolaireStore((s) => s.anneeScolaire);
 
   const handleSearch = useCallback((q: string) => setSearch(q), []);
@@ -110,23 +113,76 @@ export default function ElevesPage() {
     return matchSearch && matchClasse;
   });
 
+  const handleExportCSV = async () => {
+    if (!filtered?.length) return;
+    setExporting(true);
+    try {
+      const dossiers = await Promise.all(filtered.map((e) => elevesApi.getById(e.id)));
+      const headers = ['Matricule','Nom','Prénom','Date naissance','Lieu naissance','Sexe','Classe','Famille','Nationalité','Groupe sanguin','Allergies','Contact urgence','Remarques','Date inscription','Total dû','Total payé','Solde','Statut'];
+      const rows = dossiers.map((d, i) => [
+        d.matricule,
+        d.nom,
+        d.prenom,
+        d.dateNaissance ? new Date(d.dateNaissance).toLocaleDateString('fr-FR') : '',
+        d.lieuNaissance,
+        d.sexe === 'M' || d.sexe === '0' ? 'Masculin' : 'Féminin',
+        d.classe || '',
+        d.famille || '',
+        d.nationalite || '',
+        d.groupeSanguin || '',
+        d.allergies || '',
+        d.contactUrgence || '',
+        d.remarques || '',
+        d.dateInscription ? new Date(d.dateInscription).toLocaleDateString('fr-FR') : '',
+        d.totalDu ?? 0,
+        d.totalPaye ?? 0,
+        d.solde ?? 0,
+        filtered[i].statut || '',
+      ]);
+      const csvContent = [headers, ...rows]
+        .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        .join('\n');
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `eleves-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`${dossiers.length} élève(s) exporté(s)`);
+    } catch {
+      toast.error("Erreur lors de l'export");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div>
       <PageHeader title="Élèves" subtitle={`${eleves?.length ?? 0} élèves inscrits`}>
         <div className="flex items-center gap-2">
           {filtered && filtered.length > 0 && (
-            <button
-              onClick={() => generateAllStudentCardsPDF(filtered.map((e) => ({
-                nom: e.nom,
-                prenom: e.prenom,
-                matricule: e.matricule,
-                classe: e.classe || '',
-                anneeScolaire,
-              })))}
-              className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
-            >
-              <Printer size={18} /> Imprimer les cartes
-            </button>
+            <>
+              <button
+                onClick={handleExportCSV}
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 disabled:opacity-50 transition-colors"
+              >
+                <Download size={18} /> {exporting ? 'Export...' : 'Exporter CSV'}
+              </button>
+              <button
+                onClick={() => generateAllStudentCardsPDF(filtered.map((e) => ({
+                  nom: e.nom,
+                  prenom: e.prenom,
+                  matricule: e.matricule,
+                  classe: e.classe || '',
+                  anneeScolaire,
+                })))}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+              >
+                <Printer size={18} /> Imprimer les cartes
+              </button>
+            </>
           )}
           {canCreate('eleves') && (
             <button
