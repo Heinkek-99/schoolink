@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, MoreVertical, Pencil, Trash2, Eye } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
