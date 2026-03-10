@@ -44,8 +44,8 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  // Convert request body to PascalCase for .NET API
-  if (config.data && typeof config.data === 'object') {
+  // Convert request body to PascalCase for .NET API — skip FormData (multipart uploads)
+  if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
     config.data = convertKeysToPascalCase(config.data);
   }
   return config;
