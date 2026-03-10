@@ -35,7 +35,7 @@ export default function PaiementCreate() {
   const [selectedFamilleId, setSelectedFamilleId] = useState<string | null>(null);
   const [familleSearch, setFamilleSearch] = useState('');
   const [ventilations, setVentilations] = useState<Record<string, number>>({});
-  const [formValues, setFormValues] = useState<PaiementForm>({ date: new Date().toISOString().split('T')[0], montant: 0, mode: '', reference: '' });
+  const [formValues, setFormValues] = useState<PaiementForm>({ date: new Date().toISOString().split('T')[0], montant: 0, mode: 'Espèces', reference: '' });
 
   const { data: familleDetail } = useFamille(selectedFamilleId || '');
 

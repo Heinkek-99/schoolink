@@ -30,8 +30,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-navy flex-col items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-navy via-primary/20 to-navy" />
         <div className="relative z-10 text-center">
-          <img src={schoolflowLogo} alt="SchoolFlow" className="h-24 w-24 mx-auto mb-6 rounded-2xl" />
-          <h1 className="text-4xl font-bold text-navy-foreground mb-4">SchoolFlow</h1>
+          <img src={schoolflowLogoWhite} alt="SchoolFlow" className="h-16 mx-auto mb-6" />
           <p className="text-lg text-navy-foreground/70 max-w-md">
             Gestion scolaire simplifiée. Gérez vos élèves, familles et finances en un seul endroit.
           </p>
