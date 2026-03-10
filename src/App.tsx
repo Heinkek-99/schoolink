@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { Toaster as HotToaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRouter } from './router/AppRouter';
+import { useThemeStore } from './store/themeStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
