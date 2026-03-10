@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useLogin } from '@/hooks/useAuth';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import schoolflowLogo from '@/assets/schoolflow-logo.png';
+import schoolflowLogoWhite from '@/assets/schoolflow-logo-white.png';
 
 const loginSchema = z.object({
   username: z.string().min(1, "Nom d'utilisateur requis"),
