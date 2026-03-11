@@ -113,50 +113,79 @@ function EtablissementSection() {
 }
 
 function ThemeSection() {
-  const { currentTheme, setTheme } = useThemeStore();
+  const { currentTheme, setTheme, mode, setMode } = useThemeStore();
 
   return (
-    <div className="bg-card rounded-xl border shadow-sm p-6">
-      <h2 className="text-lg font-semibold mb-2">Apparence</h2>
-      <p className="text-sm text-muted-foreground mb-6">Choisissez le thème de couleur de l'application</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {THEME_PRESETS.map((preset) => {
-          const isActive = currentTheme === preset.name;
-          return (
+    <div className="space-y-6">
+      {/* Mode clair / sombre */}
+      <div className="bg-card rounded-xl border shadow-sm p-6">
+        <h2 className="text-lg font-semibold mb-2">Mode d'affichage</h2>
+        <p className="text-sm text-muted-foreground mb-4">Choisissez entre le mode clair et le mode sombre</p>
+        <div className="flex gap-4">
+          {(['light', 'dark'] as const).map((m) => (
             <button
-              key={preset.name}
-              onClick={() => setTheme(preset.name)}
-              className={`relative p-4 rounded-xl border-2 text-left transition-all ${
-                isActive ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-primary/40'
+              key={m}
+              onClick={() => setMode(m)}
+              className={`flex-1 p-4 rounded-xl border-2 text-center transition-all ${
+                mode === m ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-primary/40'
               }`}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex gap-1">
-                  <div className="w-6 h-6 rounded-full" style={{ background: `hsl(${preset.colors.primary})` }} />
-                  <div className="w-6 h-6 rounded-full" style={{ background: `hsl(${preset.colors.sidebarBg})` }} />
-                  <div className="w-6 h-6 rounded-full" style={{ background: `hsl(${preset.colors.success})` }} />
-                </div>
+              <div className="flex justify-center mb-3">
+                {m === 'light' ? (
+                  <div className="w-12 h-8 rounded-lg bg-white border shadow-sm" />
+                ) : (
+                  <div className="w-12 h-8 rounded-lg bg-gray-900 border border-gray-700" />
+                )}
               </div>
-              <p className="font-medium text-sm">{preset.label}</p>
-              {isActive && (
-                <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-              )}
-              {/* Mini preview */}
-              <div className="mt-3 rounded-lg overflow-hidden border" style={{ background: `hsl(${preset.colors.background})` }}>
-                <div className="flex">
-                  <div className="w-8 h-16" style={{ background: `hsl(${preset.colors.sidebarBg})` }} />
-                  <div className="flex-1 p-2 space-y-1">
-                    <div className="h-2 w-12 rounded" style={{ background: `hsl(${preset.colors.primary})` }} />
-                    <div className="h-1.5 w-16 rounded" style={{ background: `hsl(${preset.colors.muted})` }} />
-                    <div className="h-1.5 w-10 rounded" style={{ background: `hsl(${preset.colors.success})` }} />
+              <p className="font-medium text-sm">{m === 'light' ? '☀️ Clair' : '🌙 Sombre'}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Thème de couleur */}
+      <div className="bg-card rounded-xl border shadow-sm p-6">
+        <h2 className="text-lg font-semibold mb-2">Thème de couleur</h2>
+        <p className="text-sm text-muted-foreground mb-6">Choisissez le thème de couleur de l'application</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {THEME_PRESETS.map((preset) => {
+            const isActive = currentTheme === preset.name;
+            return (
+              <button
+                key={preset.name}
+                onClick={() => setTheme(preset.name)}
+                className={`relative p-4 rounded-xl border-2 text-left transition-all ${
+                  isActive ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-primary/40'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex gap-1">
+                    <div className="w-6 h-6 rounded-full" style={{ background: `hsl(${preset.colors.primary})` }} />
+                    <div className="w-6 h-6 rounded-full" style={{ background: `hsl(${preset.colors.sidebarBg})` }} />
+                    <div className="w-6 h-6 rounded-full" style={{ background: `hsl(${preset.colors.success})` }} />
                   </div>
                 </div>
-              </div>
-            </button>
-          );
-        })}
+                <p className="font-medium text-sm">{preset.label}</p>
+                {isActive && (
+                  <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                )}
+                {/* Mini preview */}
+                <div className="mt-3 rounded-lg overflow-hidden border" style={{ background: `hsl(${preset.colors.background})` }}>
+                  <div className="flex">
+                    <div className="w-8 h-16" style={{ background: `hsl(${preset.colors.sidebarBg})` }} />
+                    <div className="flex-1 p-2 space-y-1">
+                      <div className="h-2 w-12 rounded" style={{ background: `hsl(${preset.colors.primary})` }} />
+                      <div className="h-1.5 w-16 rounded" style={{ background: `hsl(${preset.colors.muted})` }} />
+                      <div className="h-1.5 w-10 rounded" style={{ background: `hsl(${preset.colors.success})` }} />
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

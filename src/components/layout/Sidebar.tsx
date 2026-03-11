@@ -7,7 +7,7 @@ import {
 import { useAppStore } from '@/store/appStore';
 import { useLogout } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
-import schoolflowLogo from '@/assets/schoolflow-logo.png';
+import { Logo } from '@/components/shared/Logo';
 
 const allNavItems = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -18,58 +18,28 @@ const allNavItems = [
   { to: '/parametres', label: 'Paramètres', icon: Settings },
 ];
 
-function useEtablissement() {
-  const [logo, setLogo] = useState<string | null>(null);
-  const [nom, setNom] = useState<string>('SchoolFlow');
-
-  useEffect(() => {
-    const load = () => {
-      const savedLogo = localStorage.getItem('etablissement_logo');
-      setLogo(savedLogo);
-      try {
-        const saved = localStorage.getItem('etablissement');
-        if (saved) {
-          const data = JSON.parse(saved);
-          if (data.nomEtablissement) setNom(data.nomEtablissement);
-        }
-      } catch {}
-    };
-    load();
-    window.addEventListener('etablissement-updated', load);
-    return () => window.removeEventListener('etablissement-updated', load);
-  }, []);
-
-  return { logo, nom };
-}
-
 export function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useAppStore();
   const location = useLocation();
   const logout = useLogout();
-  const { allowedNavItems, isAdmin } = usePermissions();
-  const { logo, nom } = useEtablissement();
+  const { allowedNavItems } = usePermissions();
 
   const navItems = allNavItems.filter((item) => {
     return allowedNavItems.includes(item.to);
   });
 
-  const logoSrc = logo || schoolflowLogo;
-
   return (
     <aside
-      className={`fixed left-0 top-0 h-full bg-navy z-30 flex flex-col transition-all duration-300 ${
+      className={`fixed left-0 top-0 h-full bg-sidebar z-30 flex flex-col transition-all duration-300 ${
         sidebarOpen ? 'w-64' : 'w-16'
       }`}
     >
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-sidebar-border">
         {sidebarOpen ? (
-          <div className="flex items-center gap-2">
-            <img src={logoSrc} alt={nom} className="h-8 w-8 object-contain rounded" />
-            <span className="text-sidebar-foreground font-bold text-lg truncate">{nom}</span>
-          </div>
+          <Logo size="sm" variant="full" />
         ) : (
-          <img src={logoSrc} alt={nom} className="h-8 w-8 object-contain rounded mx-auto" />
+          <Logo size="sm" variant="icon" />
         )}
       </div>
 
