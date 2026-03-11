@@ -4,8 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLogin } from '@/hooks/useAuth';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import schoolflowLogo from '@/assets/schoolflow-logo.png';
-import schoolflowLogoWhite from '@/assets/schoolflow-logo-white.png';
+import { Logo } from '@/components/shared/Logo';
 
 const loginSchema = z.object({
   username: z.string().min(1, "Nom d'utilisateur requis"),
@@ -30,7 +29,9 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-navy flex-col items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-navy via-primary/20 to-navy" />
         <div className="relative z-10 text-center">
-          <img src={schoolflowLogoWhite} alt="SchoolFlow" className="h-16 mx-auto mb-6" />
+          <div className="flex justify-center mb-6">
+            <Logo size="lg" variant="full" />
+          </div>
           <p className="text-lg text-navy-foreground/70 max-w-md">
             Gestion scolaire simplifiée. Gérez vos élèves, familles et finances en un seul endroit.
           </p>
@@ -42,9 +43,8 @@ export default function LoginPage() {
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
-            <img src={schoolflowLogo} alt="SchoolFlow" className="h-10 w-10 rounded-lg" />
-            <span className="text-2xl font-bold text-foreground">SchoolFlow</span>
+          <div className="lg:hidden flex justify-center mb-8">
+            <Logo size="md" variant="full" />
           </div>
 
           <h2 className="text-2xl font-bold text-foreground mb-1">Connexion</h2>

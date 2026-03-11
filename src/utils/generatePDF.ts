@@ -13,34 +13,36 @@ function getLogo(): string | null {
 
 function drawCameroonFlag(doc: jsPDF, x: number, y: number, w: number, h: number) {
   const sw = w / 3;
-  doc.setFillColor(0, 128, 0);
+  // Green stripe (left)
+  doc.setFillColor(0, 146, 70);
   doc.rect(x, y, sw, h, 'F');
+  // Red stripe (center)
   doc.setFillColor(206, 17, 38);
   doc.rect(x + sw, y, sw, h, 'F');
+  // Yellow stripe (right)
   doc.setFillColor(252, 209, 22);
   doc.rect(x + sw * 2, y, sw, h, 'F');
-  // Star
-  const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) * 0.18;
+  // Yellow star on red center stripe
+  const cx = x + sw + sw / 2;
+  const cy = y + h / 2;
+  const r = Math.min(sw, h) * 0.35;
   doc.setFillColor(252, 209, 22);
   drawStar(doc, cx, cy, r);
 }
 
 function drawStar(doc: jsPDF, cx: number, cy: number, r: number) {
-  const pts: [number, number][] = [];
-  for (let i = 0; i < 5; i++) {
-    const a1 = (i * 72 - 90) * Math.PI / 180;
-    pts.push([cx + r * Math.cos(a1), cy + r * Math.sin(a1)]);
-    const a2 = ((i * 72) + 36 - 90) * Math.PI / 180;
-    pts.push([cx + r * 0.4 * Math.cos(a2), cy + r * 0.4 * Math.sin(a2)]);
+  // Build proper 5-pointed star using triangle fan from center
+  const points: [number, number][] = [];
+  for (let i = 0; i < 10; i++) {
+    const angle = (i * 36 - 90) * Math.PI / 180;
+    const radius = i % 2 === 0 ? r : r * 0.4;
+    points.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
   }
-  // Draw as filled polygon
-  const lines: number[][] = pts.map(p => [p[0], p[1]]);
-  if (lines.length > 0) {
-    doc.setFillColor(252, 209, 22);
-    // Use triangle fan approach
-    doc.triangle(lines[0][0], lines[0][1], lines[4][0], lines[4][1], lines[6][0], lines[6][1], 'F');
-    doc.triangle(lines[0][0], lines[0][1], lines[6][0], lines[6][1], lines[8][0], lines[8][1], 'F');
-    doc.triangle(lines[2][0], lines[2][1], lines[4][0], lines[4][1], lines[8][0], lines[8][1], 'F');
+  // Draw star as triangles from center
+  doc.setFillColor(252, 209, 22);
+  for (let i = 0; i < points.length; i++) {
+    const next = (i + 1) % points.length;
+    doc.triangle(cx, cy, points[i][0], points[i][1], points[next][0], points[next][1], 'F');
   }
 }
 
