@@ -26,9 +26,7 @@ export const elevesApi = {
       if (data.contactUrgence) formData.append('ContactUrgence', data.contactUrgence);
       if (data.remarques) formData.append('Remarques', data.remarques);
       formData.append('Photo', data.photo);
-      const response = await api.post('/api/Eleves', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await api.post('/api/Eleves', formData);
       return response.data;
     }
     const { photo, ...jsonData } = data;
@@ -50,9 +48,7 @@ export const elevesApi = {
       if (data.contactUrgence) formData.append('ContactUrgence', data.contactUrgence);
       if (data.remarques) formData.append('Remarques', data.remarques);
       formData.append('Photo', data.photo);
-      const response = await api.put(`/api/Eleves/${id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await api.put(`/api/Eleves/${id}`, formData);
       return response.data;
     }
     const { photo, ...jsonData } = data;

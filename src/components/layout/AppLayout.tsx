@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { useAppStore } from '@/store/appStore';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -9,13 +10,34 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const sidebarOpen = useAppStore((s) => s.sidebarOpen);
+  const mobileSidebarOpen = useAppStore((s) => s.mobileSidebarOpen);
+  const setMobileSidebarOpen = useAppStore((s) => s.setMobileSidebarOpen);
+  const isMobile = useIsMobile();
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    if (isMobile) setMobileSidebarOpen(false);
+  }, [isMobile]);
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Mobile overlay */}
+      {isMobile && mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       <Sidebar />
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'}`}>
+
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+          isMobile ? 'ml-0' : sidebarOpen ? 'ml-64' : 'ml-16'
+        }`}
+      >
         <Header />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-3 sm:p-6">
           {children}
         </main>
       </div>
