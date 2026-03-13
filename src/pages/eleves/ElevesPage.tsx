@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer, Download } from 'lucide-react';
+import { Plus, GraduationCap, Users, MoreVertical, Eye, Pencil, Trash2, Printer, Download } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
@@ -12,6 +12,7 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import { generateAllStudentCardsPDF } from '@/utils/generatePDF';
 import { useAnneeScolaireStore } from '@/store/anneeScolaireStore';
 import { elevesApi } from '@/api/eleves.api';
+import { useDashboardStats } from '@/hooks/useDashboard';
 import type { Eleve } from '@/types/eleve.types';
 import toast from 'react-hot-toast';
 
@@ -97,7 +98,9 @@ function ActionMenu({ eleve, canEdit, canDelete }: {
 
 export default function ElevesPage() {
   const navigate = useNavigate();
+  const { data: stats, isLoading } = useDashboardStats();
   const { data: eleves, isLoading } = useEleves();
+
   const { data: classes } = useClasses();
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [search, setSearch] = useState('');
@@ -112,6 +115,14 @@ export default function ElevesPage() {
     const matchClasse = !classeFilter || e.classe === classeFilter;
     return matchSearch && matchClasse;
   });
+  
+  const totalElevesData = stats?.totalEleves;
+  const totalElevesArray = Array.isArray(totalElevesData) ? totalElevesData : [];
+  const totalElevesCount = Array.isArray(totalElevesData)
+    ? totalElevesData.length
+    : typeof totalElevesData === 'number'
+    ? totalElevesData
+    : 0;
 
   const handleExportCSV = async () => {
     if (!filtered?.length) return;
@@ -186,10 +197,22 @@ export default function ElevesPage() {
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
           <>
-            <KpiCard title="Frais attendus" value={stats?.totalFraisAttendus ?? 0} icon={Banknote} isCurrency color="primary" />
-            <KpiCard title="Total encaissé" value={stats?.totalEncaisse ?? 0} icon={Banknote} isCurrency color="success" />
-            <KpiCard title="Solde impayé" value={stats?.soldeGlobal ?? 0} icon={AlertTriangle} isCurrency color="destructive" />
-            <KpiCard title="Taux recouvrement" value={`${stats?.tauxRecouvrement ?? 0}%`} icon={TrendingUp} color="warning" />
+            <KpiCard title="Total Eleves" value={totalElevesCount} icon={GraduationCap} isCurrency color="primary" />
+            <KpiCard
+              title="Garcons"
+              value={totalElevesArray.filter((e) => e.sexe === 'M' || e.sexe === 'Masculin' || e.sexe === 0).length}
+              icon={Users}
+              isCurrency
+              color="success"
+            />
+            <KpiCard
+              title="Filles"
+              value={totalElevesArray.filter((e) => e.sexe === 'F' || e.sexe === 'Féminin' || e.sexe === 1).length}
+              icon={Users}
+              isCurrency
+              color="destructive"
+            />
+            <KpiCard title="Classes" value={`${stats?.classe?.length ?? 0}%`} icon={GraduationCap} color="info" />
           </>
         )}
       </div>
@@ -207,6 +230,7 @@ export default function ElevesPage() {
           ))}
         </select>
       </div>
+
 
       {isLoading ? (
         <div className="bg-card rounded-2xl border shadow-sm p-6"><TableSkeleton /></div>
