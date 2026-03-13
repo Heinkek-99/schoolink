@@ -4,7 +4,7 @@ import { Plus, GraduationCap, MoreVertical, Eye, Pencil, Trash2, Printer, Downlo
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
-import { TableSkeleton } from '@/components/shared/Skeletons';
+import { KpiSkeleton, TableSkeleton } from '@/components/shared/Skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useEleves, useClasses, useDeleteEleve } from '@/hooks/useEleves';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -193,7 +193,7 @@ export default function ElevesPage() {
           </>
         )}
       </div>
-      
+
       <div className="flex items-center gap-3 flex-wrap">
         <SearchBar placeholder="Rechercher un élève..." onSearch={handleSearch} />
         <select

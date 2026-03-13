@@ -13,6 +13,14 @@ export default function FinancesPage() {
   const { data: stats, isLoading } = useDashboardStats();
   const { canCreate } = usePermissions();
 
+  const totalElevesData = stats?.totalEleves;
+  const totalElevesArray = Array.isArray(totalElevesData) ? totalElevesData : [];
+  const totalElevesCount = Array.isArray(totalElevesData)
+    ? totalElevesData.length
+    : typeof totalElevesData === 'number'
+    ? totalElevesData
+    : 0;
+
   const classeChartData = stats?.statistiquesParClasse
     ?.filter((c) => c.nombreEleves > 0)
     .map((c) => ({ nom: c.nomClasse, taux: c.tauxRecouvrement })) || [];
@@ -35,10 +43,22 @@ export default function FinancesPage() {
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
           <>
-            <KpiCard title="Total" value={stats?.totalEleves.length ?? 0} icon={Banknote} isCurrency color="primary" />
-            <KpiCard title="Garcons" value={stats?.totalEleves.filter(e=>e.sexe=='M' || e.sexe === 'Masculin' || e.sexe === 0).length ?? 0} icon={Banknote} isCurrency color="success" />
-            <KpiCard title="Filles" value={stats?.totalEleves.filter(e => e.sexe === 'F' || e.sexe === 'Féminin' || e.sexe === 1).length ?? 0} icon={AlertTriangle} isCurrency color="destructive" />
-            <KpiCard title="Classes" value={`${stats?.classe.length ?? 0}%`} icon={TrendingUp} color="warning" />
+              <KpiCard title="Total" value={totalElevesCount} icon={Banknote} isCurrency color="primary" />
+            <KpiCard
+              title="Garcons"
+              value={totalElevesArray.filter((e) => e.sexe === 'M' || e.sexe === 'Masculin' || e.sexe === 0).length}
+              icon={Banknote}
+              isCurrency
+              color="success"
+            />
+            <KpiCard
+              title="Filles"
+              value={totalElevesArray.filter((e) => e.sexe === 'F' || e.sexe === 'Féminin' || e.sexe === 1).length}
+              icon={AlertTriangle}
+              isCurrency
+              color="destructive"
+            />
+            <KpiCard title="Classes" value={`${stats?.classe?.length ?? 0}%`} icon={TrendingUp} color="warning" />
           </>
         )}
       </div>
