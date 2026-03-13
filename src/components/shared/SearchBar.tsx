@@ -16,7 +16,7 @@ export function SearchBar({ placeholder = 'Rechercher...', onSearch, debounce = 
   }, [value, debounce, onSearch]);
 
   return (
-    <div className="flex items-center gap-2 bg-card border rounded-xl px-3.5 py-2.5 w-full max-w-sm shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 transition-all">
+    <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2 w-full max-w-sm">
       <Search size={18} className="text-muted-foreground shrink-0" strokeWidth={1.5} />
       <input
         type="text"

@@ -55,12 +55,12 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Nav section label */}
+      {/* Nav section label
       {isOpen && (
         <div className="px-4 pt-5 pb-2">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">Menu</p>
         </div>
-      )}
+      )} */}
 
       {/* Nav Links */}
       <nav className={`flex-1 ${isOpen ? 'px-3' : 'px-2'} ${!isOpen ? 'pt-4' : ''} space-y-1 overflow-y-auto`}>

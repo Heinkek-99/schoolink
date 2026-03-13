@@ -35,7 +35,7 @@ export function Header() {
           </div>
         )}
 
-        <div className={`flex items-center gap-2 bg-muted rounded-lg py-1.5 sm:py-2 ${isMobile ? 'flex-1 min-w-0' : 'w-72'}`}>
+        <div className={`flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5 sm:py-2 ${isMobile ? 'flex-1 min-w-0' : 'w-72'}`}>
           <Search size={16} className="text-muted-foreground shrink-0" strokeWidth={1.5} />
           <input
             type="text"
@@ -49,7 +49,7 @@ export function Header() {
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         <button
           onClick={toggleMode}
-          className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+          className="p-1.5 sm:p-2 rounded-lg hover:bg-muted transition-colors"
           title={mode === 'light' ? 'Mode sombre' : 'Mode clair'}
         >
           {mode === 'light' ? (

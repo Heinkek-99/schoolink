@@ -181,6 +181,19 @@ export default function ElevesPage() {
         </div>
       </PageHeader>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
+        ) : (
+          <>
+            <KpiCard title="Frais attendus" value={stats?.totalFraisAttendus ?? 0} icon={Banknote} isCurrency color="primary" />
+            <KpiCard title="Total encaissé" value={stats?.totalEncaisse ?? 0} icon={Banknote} isCurrency color="success" />
+            <KpiCard title="Solde impayé" value={stats?.soldeGlobal ?? 0} icon={AlertTriangle} isCurrency color="destructive" />
+            <KpiCard title="Taux recouvrement" value={`${stats?.tauxRecouvrement ?? 0}%`} icon={TrendingUp} color="warning" />
+          </>
+        )}
+      </div>
+      
       <div className="flex items-center gap-3 flex-wrap">
         <SearchBar placeholder="Rechercher un élève..." onSearch={handleSearch} />
         <select

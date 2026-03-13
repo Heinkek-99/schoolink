@@ -12,26 +12,31 @@ interface KpiCardProps {
 }
 
 const colorMap = {
-  primary: {
-    iconBg: 'bg-primary/10',
-    iconText: 'text-primary',
-  },
-  success: {
-    iconBg: 'bg-emerald-100',
-    iconText: 'text-emerald-600',
-  },
-  warning: {
-    iconBg: 'bg-amber-100',
-    iconText: 'text-amber-600',
-  },
-  destructive: {
-    iconBg: 'bg-red-100',
-    iconText: 'text-red-600',
-  },
-  info: {
-    iconBg: 'bg-primary/10',
-    iconText: 'text-primary',
-  },
+  primary: 'bg-primary/10 text-primary',
+  success: 'bg-emerald-100 text-emerald-600',
+  warning: 'bg-amber-100 text-amber-600',
+  destructive: 'bg-red-100 text-red-600',
+  info: 'bg-primary/10 text-primary',
+  // primary: {
+  //   iconBg: 'bg-primary/10',
+  //   iconText: 'text-primary',
+  // },
+  // success: {
+  //   iconBg: 'bg-emerald-100',
+  //   iconText: 'text-emerald-600',
+  // },
+  // warning: {
+  //   iconBg: 'bg-amber-100',
+  //   iconText: 'text-amber-600',
+  // },
+  // destructive: {
+  //   iconBg: 'bg-red-100',
+  //   iconText: 'text-red-600',
+  // },
+  // info: {
+  //   iconBg: 'bg-primary/10',
+  //   iconText: 'text-primary',
+  // },
 };
 
 export function KpiCard({ title, value, icon: Icon, trend, trendUp, isCurrency, color = 'primary' }: KpiCardProps) {
