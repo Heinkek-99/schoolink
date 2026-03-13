@@ -57,7 +57,7 @@ function ActionMenu({ famille, onEdit, onDelete, canEdit, canDelete }: {
         <MoreVertical size={16} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-44 bg-card border rounded-lg shadow-lg z-20 py-1 animate-fade-in">
+        <div className="absolute right-0 top-full mt-1 w-44 bg-card border rounded-xl shadow-lg z-20 py-1 animate-fade-in">
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); navigate(`/familles/${famille.id}`); }}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors text-left"
@@ -100,7 +100,6 @@ export default function FamillesPage() {
   const [editingFamille, setEditingFamille] = useState<Famille | null>(null);
   const [deletingFamille, setDeletingFamille] = useState<Famille | null>(null);
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(timer);
@@ -158,25 +157,25 @@ export default function FamillesPage() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader title="Familles" subtitle={`${familles?.length ?? 0} familles enregistrées`}>
         {canCreate('familles') && (
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm"
           >
-            <Plus size={18} /> Nouvelle famille
+            <Plus size={16} /> Nouvelle famille
           </button>
         )}
       </PageHeader>
 
-      <div className="flex items-center gap-3 mb-6 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap">
         <SearchBar placeholder="Rechercher une famille..." onSearch={handleSearch} />
         {canView('finances') && (
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border rounded-lg bg-card text-sm text-foreground outline-none"
+            className="px-3.5 py-2.5 border rounded-xl bg-card text-sm text-foreground outline-none shadow-sm focus:ring-2 focus:ring-primary/20"
           >
             <option value="">Tous les statuts</option>
             <option value="Payé">À jour</option>
@@ -187,36 +186,38 @@ export default function FamillesPage() {
       </div>
 
       {isLoading ? (
-        <div className="bg-card rounded-xl border shadow-sm p-5"><TableSkeleton /></div>
+        <div className="bg-card rounded-2xl border shadow-sm p-6"><TableSkeleton /></div>
       ) : !filtered?.length ? (
-        <div className="bg-card rounded-xl border shadow-sm p-5">
+        <div className="bg-card rounded-2xl border shadow-sm p-6">
           <EmptyState icon={<Users size={48} strokeWidth={1} />} title="Aucune famille trouvée" description="Créez une nouvelle famille pour commencer" />
         </div>
       ) : (
-        <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="text-left p-4 font-medium text-muted-foreground">Famille</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Téléphone</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Nb enfants</th>
-                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Total dû</th>}
-                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>}
-                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>}
+                <tr>
+                  <th>Famille</th>
+                  <th>Téléphone</th>
+                  <th>Nb enfants</th>
+                  {canView('finances') && <th>Total dû</th>}
+                  {canView('finances') && <th>Solde</th>}
+                  {canView('finances') && <th>Statut</th>}
                   <th className="w-12"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody>
                 {filtered.map((f) => (
-                  <tr key={f.id} onClick={() => navigate(`/familles/${f.id}`)} className="hover:bg-muted/30 cursor-pointer transition-colors">
-                    <td className="p-4 font-medium">{f.nomPere} {f.prenomPere}</td>
-                    <td className="p-4 text-muted-foreground">{f.telephonePrincipal}</td>
-                    <td className="p-4">{f.nombreEnfants}</td>
-                    {canView('finances') && <td className="p-4">{formatCurrency(f.totalDu)}</td>}
-                    {canView('finances') && <td className="p-4 font-medium">{formatCurrency(f.soldeGlobal)}</td>}
-                    {canView('finances') && <td className="p-4"><PaymentStatusBadge status={f.statutPaiement} /></td>}
-                    <td className="p-4">
+                  <tr key={f.id} onClick={() => navigate(`/familles/${f.id}`)} className="cursor-pointer">
+                    <td className="font-medium">{f.nomPere} {f.prenomPere}</td>
+                    <td className="text-muted-foreground">{f.telephonePrincipal}</td>
+                    <td>
+                      <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">{f.nombreEnfants}</span>
+                    </td>
+                    {canView('finances') && <td>{formatCurrency(f.totalDu)}</td>}
+                    {canView('finances') && <td className="font-semibold">{formatCurrency(f.soldeGlobal)}</td>}
+                    {canView('finances') && <td><PaymentStatusBadge status={f.statutPaiement} /></td>}
+                    <td>
                       <ActionMenu
                         famille={f}
                         onEdit={() => handleEdit(f)}
@@ -236,21 +237,20 @@ export default function FamillesPage() {
       {/* Delete confirmation */}
       {deletingFamille && (
         <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setDeletingFamille(null)}>
-          <div className="bg-card rounded-xl shadow-lg w-full max-w-md p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card rounded-2xl shadow-xl w-full max-w-md p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cette famille ?</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-5">
               La famille <strong>{deletingFamille.nomPere} {deletingFamille.prenomPere}</strong>
               {deletingFamille.nombreEnfants > 0 && ` et ses ${deletingFamille.nombreEnfants} enfant(s)`} sera définitivement supprimée.
-              Cette action est irréversible.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setDeletingFamille(null)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+              <button onClick={() => setDeletingFamille(null)} className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors">
                 Annuler
               </button>
               <button
                 onClick={handleDeleteConfirm}
                 disabled={deleteMutation.isPending}
-                className="flex-1 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 bg-destructive text-destructive-foreground rounded-xl text-sm font-semibold hover:bg-destructive/90 disabled:opacity-50 transition-colors"
               >
                 {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
               </button>
@@ -262,60 +262,60 @@ export default function FamillesPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-card rounded-xl shadow-lg w-full max-w-lg p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-4">Nouvelle famille</h2>
+          <div className="bg-card rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-foreground mb-5">Nouvelle famille</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Nom du père *</label>
-                  <input {...register('nomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Nom du père *</label>
+                  <input {...register('nomPere')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                   {errors.nomPere && <p className="text-xs text-destructive mt-1">{errors.nomPere.message}</p>}
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Prénom du père</label>
-                  <input {...register('prenomPere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Prénom du père</label>
+                  <input {...register('prenomPere')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Téléphone principal *</label>
-                  <input {...register('telephonePrincipal')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Téléphone principal *</label>
+                  <input {...register('telephonePrincipal')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                   {errors.telephonePrincipal && <p className="text-xs text-destructive mt-1">{errors.telephonePrincipal.message}</p>}
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Téléphone du père</label>
-                  <input {...register('telephonePere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Téléphone du père</label>
+                  <input {...register('telephonePere')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Email</label>
-                <input {...register('emailPere')} type="email" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                <label className="text-sm font-medium mb-1.5 block">Email</label>
+                <input {...register('emailPere')} type="email" className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Nom de la mère</label>
-                  <input {...register('nomMere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Nom de la mère</label>
+                  <input {...register('nomMere')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Prénom de la mère</label>
-                  <input {...register('prenomMere')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Prénom de la mère</label>
+                  <input {...register('prenomMere')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Adresse</label>
-                  <input {...register('adresse')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Adresse</label>
+                  <input {...register('adresse')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Ville</label>
-                  <input {...register('ville')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium mb-1.5 block">Ville</label>
+                  <input {...register('ville')} className="w-full px-3.5 py-2.5 border rounded-xl bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30" />
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors">
                   Annuler
                 </button>
-                <button type="submit" disabled={createMutation.isPending} className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                <button type="submit" disabled={createMutation.isPending} className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors">
                   {createMutation.isPending ? 'Création...' : 'Créer'}
                 </button>
               </div>

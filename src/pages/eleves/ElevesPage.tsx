@@ -52,7 +52,7 @@ function ActionMenu({ eleve, canEdit, canDelete }: {
         <MoreVertical size={16} />
       </button>
       {open && !showConfirm && (
-        <div className="absolute right-0 top-full mt-1 w-44 bg-card border rounded-lg shadow-lg z-20 py-1 animate-fade-in">
+        <div className="absolute right-0 top-full mt-1 w-44 bg-card border rounded-xl shadow-lg z-20 py-1 animate-fade-in">
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); navigate(`/eleves/${eleve.id}`); }}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors text-left"
@@ -78,8 +78,8 @@ function ActionMenu({ eleve, canEdit, canDelete }: {
         </div>
       )}
       {showConfirm && (
-        <div className="absolute right-0 top-full mt-1 w-64 bg-card border rounded-lg shadow-lg z-20 p-3 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-          <p className="text-sm font-medium mb-1">Supprimer cet élève ?</p>
+        <div className="absolute right-0 top-full mt-1 w-64 bg-card border rounded-xl shadow-lg z-20 p-4 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+          <p className="text-sm font-semibold mb-1">Supprimer cet élève ?</p>
           <p className="text-xs text-muted-foreground mb-3">Cette action est irréversible.</p>
           <div className="flex gap-2">
             <button onClick={() => setShowConfirm(false)} className="flex-1 px-3 py-1.5 border rounded-lg text-xs font-medium hover:bg-muted transition-colors">
@@ -120,24 +120,13 @@ export default function ElevesPage() {
       const dossiers = await Promise.all(filtered.map((e) => elevesApi.getById(e.id)));
       const headers = ['Matricule','Nom','Prénom','Date naissance','Lieu naissance','Sexe','Classe','Famille','Nationalité','Groupe sanguin','Allergies','Contact urgence','Remarques','Date inscription','Total dû','Total payé','Solde','Statut'];
       const rows = dossiers.map((d, i) => [
-        d.matricule,
-        d.nom,
-        d.prenom,
+        d.matricule, d.nom, d.prenom,
         d.dateNaissance ? new Date(d.dateNaissance).toLocaleDateString('fr-FR') : '',
-        d.lieuNaissance,
-        d.sexe === 'M' || d.sexe === '0' ? 'Masculin' : 'Féminin',
-        d.classe || '',
-        d.famille || '',
-        d.nationalite || '',
-        d.groupeSanguin || '',
-        d.allergies || '',
-        d.contactUrgence || '',
-        d.remarques || '',
+        d.lieuNaissance, d.sexe === 'M' || d.sexe === '0' ? 'Masculin' : 'Féminin',
+        d.classe || '', d.famille || '', d.nationalite || '', d.groupeSanguin || '',
+        d.allergies || '', d.contactUrgence || '', d.remarques || '',
         d.dateInscription ? new Date(d.dateInscription).toLocaleDateString('fr-FR') : '',
-        d.totalDu ?? 0,
-        d.totalPaye ?? 0,
-        d.solde ?? 0,
-        filtered[i].statut || '',
+        d.totalDu ?? 0, d.totalPaye ?? 0, d.solde ?? 0, filtered[i].statut || '',
       ]);
       const csvContent = [headers, ...rows]
         .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
@@ -158,49 +147,46 @@ export default function ElevesPage() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader title="Élèves" subtitle={`${eleves?.length ?? 0} élèves inscrits`}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {filtered && filtered.length > 0 && (
             <>
               <button
                 onClick={handleExportCSV}
                 disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-muted disabled:opacity-50 transition-colors"
               >
-                <Download size={18} /> {exporting ? 'Export...' : 'Exporter CSV'}
+                <Download size={16} /> {exporting ? 'Export...' : 'CSV'}
               </button>
               <button
                 onClick={() => generateAllStudentCardsPDF(filtered.map((e) => ({
-                  nom: e.nom,
-                  prenom: e.prenom,
-                  matricule: e.matricule,
-                  classe: e.classe || '',
-                  anneeScolaire,
+                  nom: e.nom, prenom: e.prenom, matricule: e.matricule,
+                  classe: e.classe || '', anneeScolaire,
                 })))}
-                className="flex items-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-muted transition-colors"
               >
-                <Printer size={18} /> Imprimer les cartes
+                <Printer size={16} /> Cartes
               </button>
             </>
           )}
           {canCreate('eleves') && (
             <button
               onClick={() => navigate('/eleves/nouveau')}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm"
             >
-              <Plus size={18} /> Nouvelle inscription
+              <Plus size={16} /> Inscription
             </button>
           )}
         </div>
       </PageHeader>
 
-      <div className="flex items-center gap-3 mb-6 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap">
         <SearchBar placeholder="Rechercher un élève..." onSearch={handleSearch} />
         <select
           value={classeFilter}
           onChange={(e) => setClasseFilter(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-card text-sm text-foreground outline-none"
+          className="px-3.5 py-2.5 border rounded-xl bg-card text-sm text-foreground outline-none shadow-sm focus:ring-2 focus:ring-primary/20"
         >
           <option value="">Toutes les classes</option>
           {classes?.map((c) => (
@@ -210,36 +196,36 @@ export default function ElevesPage() {
       </div>
 
       {isLoading ? (
-        <div className="bg-card rounded-xl border shadow-sm p-5"><TableSkeleton /></div>
+        <div className="bg-card rounded-2xl border shadow-sm p-6"><TableSkeleton /></div>
       ) : !filtered?.length ? (
-        <div className="bg-card rounded-xl border shadow-sm p-5">
+        <div className="bg-card rounded-2xl border shadow-sm p-6">
           <EmptyState icon={<GraduationCap size={48} strokeWidth={1} />} title="Aucun élève trouvé" />
         </div>
       ) : (
-        <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="text-left p-4 font-medium text-muted-foreground">Matricule</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Nom complet</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Classe</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Famille</th>
-                  {canView('finances') && <th className="text-left p-4 font-medium text-muted-foreground">Solde</th>}
-                  <th className="text-left p-4 font-medium text-muted-foreground">Statut</th>
-                  <th className="text-right p-4 font-medium text-muted-foreground">Actions</th>
+                <tr>
+                  <th>Matricule</th>
+                  <th>Nom complet</th>
+                  <th>Classe</th>
+                  <th>Famille</th>
+                  {canView('finances') && <th>Solde</th>}
+                  <th>Statut</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody>
                 {filtered.map((e) => (
-                  <tr key={e.id} onClick={() => navigate(`/eleves/${e.id}`)} className="hover:bg-muted/30 cursor-pointer transition-colors">
-                    <td className="p-4"><span className="status-badge-active font-mono">{e.matricule}</span></td>
-                    <td className="p-4 font-medium">{e.prenom} {e.nom}</td>
-                    <td className="p-4">{e.classe || '-'}</td>
-                    <td className="p-4">{e.famille || '-'}</td>
-                    {canView('finances') && <td className="p-4">{formatCurrency(e.solde)}</td>}
-                    <td className="p-4"><PaymentStatusBadge status={e.statut} /></td>
-                    <td className="p-4 text-right">
+                  <tr key={e.id} onClick={() => navigate(`/eleves/${e.id}`)} className="cursor-pointer">
+                    <td><span className="font-mono text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-semibold">{e.matricule}</span></td>
+                    <td className="font-medium">{e.prenom} {e.nom}</td>
+                    <td>{e.classe || '-'}</td>
+                    <td className="text-muted-foreground">{e.famille || '-'}</td>
+                    {canView('finances') && <td className="font-medium">{formatCurrency(e.solde)}</td>}
+                    <td><PaymentStatusBadge status={e.statut} /></td>
+                    <td className="text-right">
                       <ActionMenu eleve={e} canEdit={canEdit('eleves')} canDelete={canDelete('eleves')} />
                     </td>
                   </tr>
