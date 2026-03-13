@@ -98,8 +98,8 @@ function ActionMenu({ eleve, canEdit, canDelete }: {
 
 export default function ElevesPage() {
   const navigate = useNavigate();
-  const { data: stats, isLoading:isLoadingStats } = useDashboardStats();
-  const { data: eleves, isLoading:isLooadingEleves } = useEleves();
+  const { data: stats, isLoading } = useDashboardStats();
+  const { data: eleves, isLoading } = useEleves();
 
   const { data: classes } = useClasses();
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -193,7 +193,7 @@ export default function ElevesPage() {
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {isLoadingStats? (
+        {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
           <>
@@ -232,7 +232,7 @@ export default function ElevesPage() {
       </div>
 
 
-      {isLooadingEleves ? (
+      {isLoading ? (
         <div className="bg-card rounded-2xl border shadow-sm p-6"><TableSkeleton /></div>
       ) : !filtered?.length ? (
         <div className="bg-card rounded-2xl border shadow-sm p-6">
