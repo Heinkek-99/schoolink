@@ -14,17 +14,16 @@ export function AppLayout({ children }: AppLayoutProps) {
   const setMobileSidebarOpen = useAppStore((s) => s.setMobileSidebarOpen);
   const isMobile = useIsMobile();
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     if (isMobile) setMobileSidebarOpen(false);
   }, [isMobile]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile overlay */}
       {isMobile && mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
@@ -37,7 +36,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         }`}
       >
         <Header />
-        <main className="flex-1 overflow-auto p-3 sm:p-6">
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>
