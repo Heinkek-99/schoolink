@@ -36,12 +36,12 @@ function FinanceDashboard() {
   ].filter(d => d.value > 0);
 
   return (
-    <div className="space-y-6">
+    <div>
       <PageHeader title="Tableau de bord" subtitle="Vue d'ensemble de votre établissement">
         {canCreate('eleves') && (
           <button
             onClick={() => navigate('/eleves/nouveau')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
           >
             <Plus size={18} /> Inscription
           </button>
@@ -49,7 +49,7 @@ function FinanceDashboard() {
         {canCreate('paiements') && (
           <button
             onClick={() => navigate('/finances/paiement')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-success text-success-foreground rounded-xl text-sm font-semibold hover:bg-success/90 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90 transition-colors shadow-sm"
           >
             <Plus size={18} /> Paiement
           </button>
@@ -57,7 +57,7 @@ function FinanceDashboard() {
       </PageHeader>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statsLoading ? (
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
@@ -71,9 +71,9 @@ function FinanceDashboard() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Bar Chart */}
-        <div className="lg:col-span-2 bg-card rounded-2xl border shadow-sm p-6">
+        <div className="lg:col-span-2 bg-card rounded-xl border shadow-sm p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-semibold text-foreground">Effectifs par classe</h3>

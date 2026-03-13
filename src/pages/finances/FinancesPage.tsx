@@ -18,12 +18,12 @@ export default function FinancesPage() {
     .map((c) => ({ nom: c.nomClasse, taux: c.tauxRecouvrement })) || [];
 
   return (
-    <div className="space-y-6">
+    <div>
       <PageHeader title="Finances" subtitle="Tableau de bord financier">
         {canCreate('paiements') && (
           <button
             onClick={() => navigate('/finances/paiement')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-success text-success-foreground rounded-xl text-sm font-semibold hover:bg-success/90 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90 transition-colors shadow-sm"
           >
             <Plus size={18} /> Nouveau paiement
           </button>

@@ -19,15 +19,15 @@ export function Header() {
       {/* Left */}
       <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
         {isMobile && (
-          <button onClick={toggleMobileSidebar} className="p-2 rounded-xl hover:bg-muted transition-colors shrink-0">
-            <Menu size={20} className="text-foreground" />
+          <button onClick={toggleMobileSidebar} className="p-1.5 rounded-lg hover:bg-muted transition-colors shrink-0">
+            <Menu size={22} className="text-foreground" />
           </button>
         )}
 
         {(schoolLogo || schoolName) && (
           <div className="flex items-center gap-2 shrink-0">
             {schoolLogo && (
-              <img src={schoolLogo} alt="Logo" className="h-8 w-8 rounded-lg object-contain" />
+              <img src={schoolLogo} alt="Logo" className="h-8 w-8 rounded-md object-contain" />
             )}
             {schoolName && !isMobile && (
               <span className="text-sm font-semibold text-foreground truncate max-w-[150px]">{schoolName}</span>
@@ -35,7 +35,7 @@ export function Header() {
           </div>
         )}
 
-        <div className={`flex items-center gap-2 bg-muted/60 rounded-xl px-3.5 py-2 ${isMobile ? 'flex-1 min-w-0' : 'w-72'}`}>
+        <div className={`flex items-center gap-2 bg-muted rounded-lg py-1.5 sm:py-2 ${isMobile ? 'flex-1 min-w-0' : 'w-72'}`}>
           <Search size={16} className="text-muted-foreground shrink-0" strokeWidth={1.5} />
           <input
             type="text"
@@ -46,10 +46,10 @@ export function Header() {
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         <button
           onClick={toggleMode}
-          className="p-2 rounded-xl hover:bg-muted transition-colors"
+          className="p-1.5 rounded-lg hover:bg-muted transition-colors"
           title={mode === 'light' ? 'Mode sombre' : 'Mode clair'}
         >
           {mode === 'light' ? (
@@ -61,15 +61,15 @@ export function Header() {
 
         <NotificationPanel />
 
-        <div className="flex items-center gap-2.5 ml-1">
+        <div className="flex items-center gap-2">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-foreground leading-tight">{user?.prenom} {user?.nom}</p>
-            <p className="text-[11px] text-muted-foreground">{user?.role}</p>
+            <p className="text-sm font-medium">{user?.prenom} {user?.nom}</p>
+            <p className="text-xs text-muted-foreground">{user?.role}</p>
           </div>
-          <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">
-              {user?.prenom?.[0]}{user?.nom?.[0]}
-            </span>
+          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-primary flex items-center justify-center">
+            <User size={16} className="text-primary-foreground" />
+              {/* {user?.prenom?.[0]}{user?.nom?.[0]}
+            </span> */}
           </div>
         </div>
       </div>
