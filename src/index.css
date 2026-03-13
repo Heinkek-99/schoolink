@@ -6,61 +6,64 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 215 25% 27%;
+    --background: 220 20% 97%;
+    --foreground: 220 25% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 220 25% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 220 25% 18%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 25% 18%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 215 25% 27%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 25% 18%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 160 84% 39%;
+    --success: 152 69% 41%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --navy: 213 52% 24%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --navy: 222 47% 21%;
     --navy-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 217 91% 60%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 213 52% 24%;
-    --sidebar-foreground: 210 40% 96%;
+    --sidebar-background: 222 47% 21%;
+    --sidebar-foreground: 220 14% 96%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 213 52% 30%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 213 52% 30%;
+    --sidebar-accent: 222 40% 28%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 222 40% 28%;
     --sidebar-ring: 217 91% 60%;
-    --sidebar-muted: 213 40% 40%;
+    --sidebar-muted: 220 15% 55%;
 
     --chart-1: 217 91% 60%;
-    --chart-2: 160 84% 39%;
+    --chart-2: 152 69% 41%;
     --chart-3: 38 92% 50%;
-    --chart-4: 0 84% 60%;
+    --chart-4: 0 72% 51%;
     --chart-5: 270 50% 60%;
-    --chart-6: 190 80% 45%;
+    --chart-6: 199 89% 48%;
   }
 }
 
@@ -77,23 +80,23 @@
 
 @layer components {
   .status-badge-paid {
-    @apply bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded-full;
+    @apply bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full;
   }
   .status-badge-partial {
-    @apply bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full;
+    @apply bg-amber-50 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full;
   }
   .status-badge-unpaid {
-    @apply bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full;
+    @apply bg-red-50 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full;
   }
   .status-badge-active {
-    @apply bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full;
+    @apply bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full;
   }
   .status-badge-archived {
-    @apply bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded-full;
+    @apply bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-1 rounded-full;
   }
 
   .kpi-card {
-    @apply bg-card rounded-xl border shadow-sm p-5 flex items-start gap-4;
+    @apply bg-card rounded-2xl border shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200;
   }
 
   .sidebar-link {
@@ -105,12 +108,28 @@
   .sidebar-link-inactive {
     @apply text-[hsl(var(--sidebar-muted))] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))];
   }
+
+  .data-table {
+    @apply w-full text-sm;
+  }
+  .data-table thead tr {
+    @apply border-b bg-muted/40;
+  }
+  .data-table th {
+    @apply text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground;
+  }
+  .data-table tbody tr {
+    @apply border-b last:border-0 hover:bg-muted/30 transition-colors;
+  }
+  .data-table td {
+    @apply px-4 py-3.5;
+  }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
