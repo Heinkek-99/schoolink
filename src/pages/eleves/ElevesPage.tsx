@@ -4,6 +4,7 @@ import { Plus, GraduationCap, Users, MoreVertical, Eye, Pencil, Trash2, Printer,
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
+import { KpiCard } from '@/components/shared/KpiCard';
 import { KpiSkeleton, TableSkeleton } from '@/components/shared/Skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useEleves, useClasses, useDeleteEleve } from '@/hooks/useEleves';
@@ -197,22 +198,20 @@ export default function ElevesPage() {
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
           <>
-            <KpiCard title="Total Eleves" value={totalElevesCount} icon={GraduationCap} isCurrency color="primary" />
+            <KpiCard title="Total Eleves" value={totalElevesCount} icon={GraduationCap} color="primary" />
             <KpiCard
               title="Garcons"
               value={totalElevesArray.filter((e) => e.sexe === 'M' || e.sexe === 'Masculin' || e.sexe === 0).length}
               icon={Users}
-              isCurrency
               color="success"
             />
             <KpiCard
               title="Filles"
               value={totalElevesArray.filter((e) => e.sexe === 'F' || e.sexe === 'Féminin' || e.sexe === 1).length}
               icon={Users}
-              isCurrency
               color="destructive"
             />
-            <KpiCard title="Classes" value={`${stats?.classe?.length ?? 0}%`} icon={GraduationCap} color="info" />
+            <KpiCard title="Classes" value={`${stats?.classe?.length ?? 0}%`} icon={GraduationCap} />
           </>
         )}
       </div>

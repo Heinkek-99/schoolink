@@ -43,11 +43,11 @@ export default function FinancesPage() {
         )}
       </div>
 
-      <div className="bg-card rounded-xl border shadow-sm p-6">
-        {/* <div className="mb-5"> */}
+      <div className="bg-card rounded-2xl border shadow-sm p-6 mt-8">
+        <div className="mb-5">
           <h3 className="font-semibold text-foreground mb-4">Taux de recouvrement par classe</h3>
           <p className="text-xs text-muted-foreground mt-0.5">Pourcentage de recouvrement par classe</p>
-        {/* </div> */}
+        </div>
         {classeChartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={classeChartData}>

@@ -45,11 +45,11 @@ export function KpiCard({ title, value, icon: Icon, trend, trendUp, isCurrency, 
   return (
     <div className={`kpi-card animate-fade-in`}>
       <div className={`rounded-xl p-3 ${colorMap[color]}`}>
-        <Icon size={22} strokeWidth={1.5} />
+        <Icon size={18} strokeWidth={1.5} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-muted-foreground uppercase">{title}</p>
-        <p className="text-2xl font-bold text-foreground truncate">{displayValue}</p>
+        <p className="text-xl font-bold text-foreground truncate">{displayValue}</p>
         {trend && (
           <p className={`text-xs mt-1 ${trendUp ? 'text-emerald-600' : 'text-red-500'}`}>
             {trendUp ? '↑' : '↓'} {trend}
