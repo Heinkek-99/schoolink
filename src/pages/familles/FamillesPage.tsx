@@ -1,11 +1,14 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Users, MoreVertical, Pencil, Trash2, Eye } from 'lucide-react';
+import { Plus, Users, MoreVertical, Pencil, Trash2, Eye, AlertTriangle, Banknote, UserCheck } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { PaymentStatusBadge } from '@/components/shared/PaymentStatusBadge';
-import { TableSkeleton } from '@/components/shared/Skeletons';
+import { KpiCard } from '@/components/shared/KpiCard';
+import { KpiSkeleton, TableSkeleton } from '@/components/shared/Skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { ConfirmDeleteModal } from '@/components/shared/ConfirmDeleteModal';
+import { SortableTableHeader, toggleSort, sortData, type SortState } from '@/components/shared/SortableTableHeader';
 import { useFamilles, useCreateFamille, useDeleteFamille } from '@/hooks/useFamilles';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -13,7 +16,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNotificationStore } from '@/store/notificationStore';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { Famille } from '@/types/famille.types';
+import { useRef } from 'react';
 
 const familleSchema = z.object({
   nomPere: z.string().min(1, 'Nom du père requis'),
@@ -29,7 +34,7 @@ const familleSchema = z.object({
 
 type FamilleForm = z.infer<typeof familleSchema>;
 
-function ActionMenu({ famille, onEdit, onDelete, canEdit, canDelete }: {
+function FamilleActionMenu({ famille, onEdit, onDelete, canEdit, canDelete }: {
   famille: Famille;
   onEdit: () => void;
   onDelete: () => void;
@@ -97,8 +102,9 @@ export default function FamillesPage() {
   const addNotification = useNotificationStore((s) => s.addNotification);
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingFamille, setEditingFamille] = useState<Famille | null>(null);
   const [deletingFamille, setDeletingFamille] = useState<Famille | null>(null);
+  const [sort, setSort] = useState<SortState>({ key: '', direction: null });
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
@@ -109,16 +115,44 @@ export default function FamillesPage() {
     resolver: zodResolver(familleSchema),
   });
 
-  const editForm = useForm<FamilleForm>({
-    resolver: zodResolver(familleSchema),
-  });
-
   const handleSearch = useCallback((q: string) => setSearch(q), []);
 
   const filtered = useMemo(() => {
-    if (!statusFilter) return familles;
-    return familles?.filter((f) => f.statutPaiement === statusFilter);
-  }, [familles, statusFilter]);
+    const list = statusFilter ? familles?.filter((f) => f.statutPaiement === statusFilter) ?? [] : familles ?? [];
+    return sortData(list, sort, (item, key) => {
+      switch (key) {
+        case 'nom': return `${item.nomPere} ${item.prenomPere}`;
+        case 'telephone': return item.telephonePrincipal;
+        case 'enfants': return item.nombreEnfants;
+        case 'totalDu': return item.totalDu;
+        case 'solde': return item.soldeGlobal;
+        case 'statut': return item.statutPaiement;
+        default: return '';
+      }
+    });
+  }, [familles, statusFilter, sort]);
+
+  // KPI computations
+  const kpis = useMemo(() => {
+    const list = familles ?? [];
+    const total = list.length;
+    const impayees = list.filter(f => f.soldeGlobal < 0).length;
+    const totalImpaye = list.reduce((sum, f) => sum + Math.max(0, -f.soldeGlobal), 0);
+    return { total, impayees, totalImpaye };
+  }, [familles]);
+
+  const allSelected = filtered.length > 0 && selectedIds.size === filtered.length;
+  const toggleSelectAll = () => {
+    if (allSelected) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filtered.map(f => f.id)));
+  };
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const onSubmit = (data: FamilleForm) => {
     const cleanData: Record<string, any> = {
@@ -169,6 +203,18 @@ export default function FamillesPage() {
         )}
       </PageHeader>
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)
+        ) : (
+          <>
+            <KpiCard title="Familles actives" value={kpis.total} icon={UserCheck} color="primary" tooltipContent="Nombre total de familles enregistrées" />
+            <KpiCard title="Familles impayées" value={kpis.impayees} icon={AlertTriangle} color="warning" tooltipContent={`${kpis.impayees} familles avec solde négatif`} />
+            <KpiCard title="Total impayé" value={kpis.totalImpaye} icon={Banknote} isCurrency color="destructive" tooltipContent="Montant total des soldes négatifs" />
+          </>
+        )}
+      </div>
+
       <div className="flex items-center gap-3 flex-wrap">
         <SearchBar placeholder="Rechercher une famille..." onSearch={handleSearch} />
         {canView('finances') && (
@@ -183,32 +229,45 @@ export default function FamillesPage() {
             <option value="Impayé">Impayé</option>
           </select>
         )}
+        {selectedIds.size > 0 && (
+          <span className="text-xs text-muted-foreground ml-auto">{selectedIds.size} sélectionnée(s)</span>
+        )}
       </div>
 
       {isLoading ? (
         <div className="bg-card rounded-2xl border shadow-sm p-6"><TableSkeleton /></div>
-      ) : !filtered?.length ? (
+      ) : !filtered.length ? (
         <div className="bg-card rounded-2xl border shadow-sm p-6">
           <EmptyState icon={<Users size={48} strokeWidth={1} />} title="Aucune famille trouvée" description="Créez une nouvelle famille pour commencer" />
         </div>
       ) : (
         <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[70vh]">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Famille</th>
-                  <th>Téléphone</th>
-                  <th>Nb enfants</th>
-                  {canView('finances') && <th>Total dû</th>}
-                  {canView('finances') && <th>Solde</th>}
-                  {canView('finances') && <th>Statut</th>}
+                  <th className="w-10">
+                    <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} onClick={(e) => e.stopPropagation()} />
+                  </th>
+                  <SortableTableHeader label="Famille" sortKey="nom" currentSort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />
+                  <SortableTableHeader label="Téléphone" sortKey="telephone" currentSort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />
+                  <SortableTableHeader label="Nb enfants" sortKey="enfants" currentSort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />
+                  {canView('finances') && <SortableTableHeader label="Total dû" sortKey="totalDu" currentSort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />}
+                  {canView('finances') && <SortableTableHeader label="Solde" sortKey="solde" currentSort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />}
+                  {canView('finances') && <SortableTableHeader label="Statut" sortKey="statut" currentSort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />}
                   <th className="w-12"></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((f) => (
                   <tr key={f.id} onClick={() => navigate(`/familles/${f.id}`)} className="cursor-pointer">
+                    <td>
+                      <Checkbox
+                        checked={selectedIds.has(f.id)}
+                        onCheckedChange={() => toggleSelect(f.id)}
+                        onClick={(ev) => ev.stopPropagation()}
+                      />
+                    </td>
                     <td className="font-medium">{f.nomPere} {f.prenomPere}</td>
                     <td className="text-muted-foreground">{f.telephonePrincipal}</td>
                     <td>
@@ -218,7 +277,7 @@ export default function FamillesPage() {
                     {canView('finances') && <td className="font-semibold">{formatCurrency(f.soldeGlobal)}</td>}
                     {canView('finances') && <td><PaymentStatusBadge status={f.statutPaiement} /></td>}
                     <td>
-                      <ActionMenu
+                      <FamilleActionMenu
                         famille={f}
                         onEdit={() => handleEdit(f)}
                         onDelete={() => setDeletingFamille(f)}
@@ -234,30 +293,13 @@ export default function FamillesPage() {
         </div>
       )}
 
-      {/* Delete confirmation */}
-      {deletingFamille && (
-        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4" onClick={() => setDeletingFamille(null)}>
-          <div className="bg-card rounded-2xl shadow-xl w-full max-w-md p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-destructive mb-2">Supprimer cette famille ?</h3>
-            <p className="text-sm text-muted-foreground mb-5">
-              La famille <strong>{deletingFamille.nomPere} {deletingFamille.prenomPere}</strong>
-              {deletingFamille.nombreEnfants > 0 && ` et ses ${deletingFamille.nombreEnfants} enfant(s)`} sera définitivement supprimée.
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setDeletingFamille(null)} className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors">
-                Annuler
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                disabled={deleteMutation.isPending}
-                className="flex-1 py-2.5 bg-destructive text-destructive-foreground rounded-xl text-sm font-semibold hover:bg-destructive/90 disabled:opacity-50 transition-colors"
-              >
-                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDeleteModal
+        open={!!deletingFamille}
+        onOpenChange={(open) => { if (!open) setDeletingFamille(null); }}
+        description={`La famille ${deletingFamille?.nomPere ?? ''} ${deletingFamille?.prenomPere ?? ''}${deletingFamille && deletingFamille.nombreEnfants > 0 ? ` et ses ${deletingFamille.nombreEnfants} enfant(s)` : ''} sera définitivement supprimée.`}
+        onConfirm={handleDeleteConfirm}
+        isPending={deleteMutation.isPending}
+      />
 
       {/* Create Modal */}
       {showModal && (
