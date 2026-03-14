@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -96,7 +96,7 @@
   }
 
   .kpi-card {
-    @apply bg-card rounded-2xl border shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200;
+    @apply bg-card rounded-2xl border shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200 relative overflow-hidden;
   }
 
   .sidebar-link {
@@ -112,17 +112,33 @@
   .data-table {
     @apply w-full text-sm;
   }
+  .data-table thead {
+    @apply sticky top-0 z-10;
+  }
   .data-table thead tr {
-    @apply border-b bg-muted/40;
+    @apply border-b bg-muted/60 backdrop-blur-sm;
   }
   .data-table th {
-    @apply text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground;
+    @apply text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground select-none;
+  }
+  .data-table th.sortable {
+    @apply cursor-pointer hover:text-foreground transition-colors;
   }
   .data-table tbody tr {
     @apply border-b last:border-0 hover:bg-muted/30 transition-colors;
   }
   .data-table td {
     @apply px-4 py-3.5;
+  }
+
+  .data-table tbody tr.row-paid {
+    @apply bg-emerald-50/30;
+  }
+  .data-table tbody tr.row-partial {
+    @apply bg-amber-50/30;
+  }
+  .data-table tbody tr.row-unpaid {
+    @apply bg-red-50/30;
   }
 }
 
