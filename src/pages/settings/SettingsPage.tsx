@@ -33,7 +33,11 @@ type TypeFraisForm = z.infer<typeof typeFraisSchema>;
 
 function EtablissementSection() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const [cachetPreview, setCachetPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const signatureInputRef = useRef<HTMLInputElement>(null);
+  const cachetInputRef = useRef<HTMLInputElement>(null);
 
   const etabForm = useForm<EtablissementForm>({
     resolver: zodResolver(etablissementSchema),
@@ -47,6 +51,10 @@ function EtablissementSection() {
     if (saved) { try { etabForm.reset(JSON.parse(saved)); } catch {} }
     const savedLogo = localStorage.getItem('etablissement_logo');
     if (savedLogo) setLogoPreview(savedLogo);
+    const savedSig = localStorage.getItem('etablissement_signature');
+    if (savedSig) setSignaturePreview(savedSig);
+    const savedCachet = localStorage.getItem('etablissement_cachet');
+    if (savedCachet) setCachetPreview(savedCachet);
   }, []);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +63,24 @@ function EtablissementSection() {
       if (file.size > 500_000) { toast.error('Le logo ne doit pas dépasser 500 Ko'); return; }
       const reader = new FileReader();
       reader.onloadend = () => setLogoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (v: string | null) => void,
+    key: string
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 500_000) { toast.error('Le fichier ne doit pas dépasser 500 Ko'); return; }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setter(result);
+        localStorage.setItem(key, result);
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -72,42 +98,135 @@ function EtablissementSection() {
     toast.success("Informations de l'établissement enregistrées");
   };
 
+  const inputCls = "w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30";
+
   return (
-    <div className="bg-card rounded-xl border shadow-sm p-6">
-      <h2 className="text-lg font-semibold mb-4">Informations de l'établissement</h2>
-      <form onSubmit={etabForm.handleSubmit(onSaveEtablissement)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <label className="text-sm font-medium mb-2 block">Logo de l'établissement</label>
-            <div className="flex items-center gap-4">
-              <div onClick={() => logoInputRef.current?.click()} className="relative h-20 w-20 rounded-xl bg-muted flex items-center justify-center cursor-pointer border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors overflow-hidden">
-                {logoPreview ? <img src={logoPreview} alt="Logo" className="h-full w-full object-contain p-1" /> : <Upload size={24} className="text-muted-foreground" />}
+    <div className="space-y-6">
+      <div className="bg-card rounded-xl border shadow-sm p-6">
+        <h2 className="text-lg font-semibold mb-4">Informations de l'établissement</h2>
+        <form onSubmit={etabForm.handleSubmit(onSaveEtablissement)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium mb-2 block">Logo de l'établissement</label>
+              <div className="flex items-center gap-4">
+                <div onClick={() => logoInputRef.current?.click()} className="relative h-20 w-20 rounded-xl bg-muted flex items-center justify-center cursor-pointer border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors overflow-hidden">
+                  {logoPreview ? <img src={logoPreview} alt="Logo" className="h-full w-full object-contain p-1" /> : <Upload size={24} className="text-muted-foreground" />}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Cliquez pour charger un logo (max 500 Ko)</p>
+                  <p className="text-xs text-muted-foreground">PNG, JPG recommandé</p>
+                  {logoPreview && (
+                    <button type="button" onClick={removeLogo} className="flex items-center gap-1 text-xs text-destructive hover:underline mt-1"><X size={12} /> Supprimer</button>
+                  )}
+                </div>
+                <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Cliquez pour charger un logo (max 500 Ko)</p>
-                <p className="text-xs text-muted-foreground">PNG, JPG ou SVG recommandé</p>
-                {logoPreview && (
-                  <button type="button" onClick={removeLogo} className="flex items-center gap-1 text-xs text-destructive hover:underline mt-1"><X size={12} /> Supprimer le logo</button>
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium mb-1 block">Nom de l'établissement *</label>
+              <input {...etabForm.register('nomEtablissement')} className={inputCls} />
+            </div>
+            <div><label className="text-sm font-medium mb-1 block">Directeur</label><input {...etabForm.register('directeur')} className={inputCls} /></div>
+            <div><label className="text-sm font-medium mb-1 block">Année scolaire *</label><input {...etabForm.register('anneeScolaire')} className={inputCls} /></div>
+            <div><label className="text-sm font-medium mb-1 block">Téléphone</label><input {...etabForm.register('telephone')} className={inputCls} /></div>
+            <div><label className="text-sm font-medium mb-1 block">Email</label><input {...etabForm.register('email')} type="email" className={inputCls} /></div>
+            <div><label className="text-sm font-medium mb-1 block">Adresse</label><input {...etabForm.register('adresse')} className={inputCls} /></div>
+            <div><label className="text-sm font-medium mb-1 block">Ville</label><input {...etabForm.register('ville')} className={inputCls} /></div>
+          </div>
+          <div className="flex justify-end pt-2">
+            <button type="submit" className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"><Save size={16} /> Enregistrer</button>
+          </div>
+        </form>
+      </div>
+
+      {/* Signature & Cachet */}
+      <div className="bg-card rounded-xl border shadow-sm p-6">
+        <h2 className="text-lg font-semibold mb-1">Signature & Cachet officiel</h2>
+        <p className="text-sm text-muted-foreground mb-5">
+          Utilisés automatiquement sur les cartes d'élèves et les documents officiels (certificats de scolarité, bulletins financiers…)
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Signature */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Signature du directeur</label>
+            <div className="flex items-start gap-4">
+              <div
+                onClick={() => signatureInputRef.current?.click()}
+                className="h-24 w-40 rounded-xl bg-muted flex items-center justify-center cursor-pointer border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors overflow-hidden"
+              >
+                {signaturePreview ? (
+                  <img src={signaturePreview} alt="Signature" className="h-full w-full object-contain p-2" />
+                ) : (
+                  <div className="text-center">
+                    <Upload size={20} className="text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground">Signature</p>
+                  </div>
                 )}
               </div>
-              <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">PNG avec fond transparent recommandé</p>
+                <p className="text-xs text-muted-foreground">Max 500 Ko</p>
+                {signaturePreview && (
+                  <button
+                    type="button"
+                    onClick={() => { setSignaturePreview(null); localStorage.removeItem('etablissement_signature'); if (signatureInputRef.current) signatureInputRef.current.value = ''; }}
+                    className="flex items-center gap-1 text-xs text-destructive hover:underline mt-2"
+                  >
+                    <X size={12} /> Supprimer
+                  </button>
+                )}
+              </div>
             </div>
+            <input
+              ref={signatureInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageUpload(e, setSignaturePreview, 'etablissement_signature')}
+              className="hidden"
+            />
           </div>
-          <div className="md:col-span-2">
-            <label className="text-sm font-medium mb-1 block">Nom de l'établissement *</label>
-            <input {...etabForm.register('nomEtablissement')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+
+          {/* Cachet */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Cachet de l'établissement</label>
+            <div className="flex items-start gap-4">
+              <div
+                onClick={() => cachetInputRef.current?.click()}
+                className="h-24 w-24 rounded-xl bg-muted flex items-center justify-center cursor-pointer border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors overflow-hidden"
+              >
+                {cachetPreview ? (
+                  <img src={cachetPreview} alt="Cachet" className="h-full w-full object-contain p-2" />
+                ) : (
+                  <div className="text-center">
+                    <Upload size={20} className="text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground">Cachet</p>
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">PNG avec fond transparent recommandé</p>
+                <p className="text-xs text-muted-foreground">Max 500 Ko</p>
+                {cachetPreview && (
+                  <button
+                    type="button"
+                    onClick={() => { setCachetPreview(null); localStorage.removeItem('etablissement_cachet'); if (cachetInputRef.current) cachetInputRef.current.value = ''; }}
+                    className="flex items-center gap-1 text-xs text-destructive hover:underline mt-2"
+                  >
+                    <X size={12} /> Supprimer
+                  </button>
+                )}
+              </div>
+            </div>
+            <input
+              ref={cachetInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageUpload(e, setCachetPreview, 'etablissement_cachet')}
+              className="hidden"
+            />
           </div>
-          <div><label className="text-sm font-medium mb-1 block">Directeur</label><input {...etabForm.register('directeur')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>
-          <div><label className="text-sm font-medium mb-1 block">Année scolaire *</label><input {...etabForm.register('anneeScolaire')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>
-          <div><label className="text-sm font-medium mb-1 block">Téléphone</label><input {...etabForm.register('telephone')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>
-          <div><label className="text-sm font-medium mb-1 block">Email</label><input {...etabForm.register('email')} type="email" className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>
-          <div><label className="text-sm font-medium mb-1 block">Adresse</label><input {...etabForm.register('adresse')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>
-          <div><label className="text-sm font-medium mb-1 block">Ville</label><input {...etabForm.register('ville')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>
         </div>
-        <div className="flex justify-end pt-2">
-          <button type="submit" className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"><Save size={16} /> Enregistrer</button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }

@@ -55,12 +55,18 @@ export default function EleveDetail() {
 
   const startEditing = () => {
     if (eleve) {
+      // Normaliser le sexe retourné par l'API vers les valeurs du select
+      const sexeNormalized = (() => {
+        const s = eleve.sexe as any;
+        if (s === 'Masculin' || s === 'M' || s === '1' || s === 1) return 'Masculin';
+        return 'Feminin'; // C# enum : pas d'accent
+      })();
       editForm.reset({
         nom: eleve.nom,
         prenom: eleve.prenom,
         dateNaissance: eleve.dateNaissance?.split('T')[0] || '',
         lieuNaissance: eleve.lieuNaissance,
-        sexe: eleve.sexe,
+        sexe: sexeNormalized,
         nationalite: eleve.nationalite || '',
         groupeSanguin: eleve.groupeSanguin || '',
         allergies: eleve.allergies || '',
@@ -85,7 +91,22 @@ export default function EleveDetail() {
 
   const onSave = (data: EditEleveForm) => {
     updateMutation.mutate(
-      { id: id!, data: { nom: data.nom, prenom: data.prenom, dateNaissance: data.dateNaissance, lieuNaissance: data.lieuNaissance, sexe: data.sexe, nationalite: data.nationalite, groupeSanguin: data.groupeSanguin, allergies: data.allergies, contactUrgence: data.contactUrgence, remarques: data.remarques, photo: editPhoto || undefined } },
+      {
+        id: id!,
+        data: {
+          nom: data.nom,
+          prenom: data.prenom,
+          dateNaissance: data.dateNaissance,
+          lieuNaissance: data.lieuNaissance,
+          sexe: data.sexe,
+          nationalite: data.nationalite,
+          groupeSanguin: data.groupeSanguin,
+          allergies: data.allergies,
+          contactUrgence: data.contactUrgence,
+          remarques: data.remarques,
+          photo: editPhoto || undefined,
+        },
+      },
       { onSuccess: () => { setIsEditing(false); setEditPhoto(null); setEditPhotoPreview(null); } }
     );
   };
@@ -223,8 +244,8 @@ export default function EleveDetail() {
                 <div>
                   <label className="text-sm font-medium mb-1 block">Sexe *</label>
                   <select {...editForm.register('sexe')} className="w-full px-3 py-2 border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30">
-                    <option value="0">Masculin</option>
-                    <option value="1">Féminin</option>
+                    <option value="Masculin">Masculin</option>
+                    <option value="Feminin">Féminin</option>
                   </select>
                 </div>
                 <div>
@@ -286,7 +307,7 @@ export default function EleveDetail() {
             <div><span className="text-muted-foreground">Prénom:</span> <strong>{eleve.prenom}</strong></div>
             <div><span className="text-muted-foreground">Date de naissance:</span> <strong>{formatDate(eleve.dateNaissance)}</strong></div>
             <div><span className="text-muted-foreground">Lieu de naissance:</span> <strong>{eleve.lieuNaissance}</strong></div>
-            <div><span className="text-muted-foreground">Sexe:</span> <strong>{eleve.sexe === 'M' || eleve.sexe === '0' ? 'Masculin' : 'Féminin'}</strong></div>
+            <div><span className="text-muted-foreground">Sexe:</span> <strong>{['Masculin','M','1',1].includes(eleve.sexe as any) ? 'Masculin' : 'Féminin'}</strong></div>
             <div><span className="text-muted-foreground">Matricule:</span> <strong>{eleve.matricule}</strong></div>
             <div><span className="text-muted-foreground">Classe:</span> <strong>{eleve.classe || '-'}</strong></div>
             <div><span className="text-muted-foreground">Famille:</span> <strong>{eleve.famille || '-'}</strong></div>

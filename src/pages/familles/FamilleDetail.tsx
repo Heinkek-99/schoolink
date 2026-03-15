@@ -64,25 +64,22 @@ export default function FamilleDetail() {
   };
 
   const onSave = (data: EditFamilleForm) => {
-    const cleanData: Record<string, any> = {
-      id: id!,
-      nomPere: data.nomPere,
-      telephonePrincipal: data.telephonePrincipal,
-    };
-    if (data.prenomPere) cleanData.prenomPere = data.prenomPere;
-    if (data.telephonePere) cleanData.telephonePere = data.telephonePere;
-    if (data.emailPere) cleanData.emailPere = data.emailPere;
-    if (data.nomMere) cleanData.nomMere = data.nomMere;
-    if (data.prenomMere) cleanData.prenomMere = data.prenomMere;
-    if (data.telephoneMere) cleanData.telephoneMere = data.telephoneMere;
-    if (data.adresse) cleanData.adresse = data.adresse;
-    if (data.ville) cleanData.ville = data.ville;
-
-    console.log('[UpdateFamille] Sending:', cleanData);
     updateMutation.mutate(
-      cleanData as any,
       {
-        onSuccess: () => { console.log('[UpdateFamille] Success'); setIsEditing(false); },
+        id: id!,
+        nomPere: data.nomPere,
+        prenomPere: data.prenomPere || undefined,
+        telephonePrincipal: data.telephonePrincipal,
+        telephonePere: data.telephonePere || undefined,
+        emailPere: data.emailPere || undefined,
+        nomMere: data.nomMere || undefined,
+        prenomMere: data.prenomMere || undefined,
+        telephoneMere: data.telephoneMere || undefined,
+        adresse: data.adresse || undefined,
+        ville: data.ville || undefined,
+      },
+      {
+        onSuccess: () => setIsEditing(false),
         onError: (err: any) => console.error('[UpdateFamille] Error:', err),
       }
     );

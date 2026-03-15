@@ -78,7 +78,11 @@ function ActionMenu({ eleve, canEdit, canDelete, onDelete }: {
 }
 
 function isMale(sexe: any): boolean {
-  return sexe === 'M' || sexe === 'Masculin' || sexe === 0 || sexe === '0';
+  // Enum C# Masculin=1, Feminin=2
+  // API peut retourner : 'Masculin', 'M', 1, '1' pour masculin
+  // et 'Feminin' (sans accent), 'Féminin', 'F', 2, '2' pour féminin
+  if (sexe === 'Feminin' || sexe === 'Féminin' || sexe === 'F' || sexe === 2 || sexe === '2') return false;
+  return sexe === 'Masculin' || sexe === 'M' || sexe === 1 || sexe === '1';
 }
 
 export default function ElevesPage() {
@@ -118,16 +122,10 @@ export default function ElevesPage() {
     });
   }, [eleves, search, classeFilter, sort]);
 
-  const totalElevesData = stats?.totalEleves;
-  const totalElevesArray = Array.isArray(totalElevesData) ? totalElevesData : [];
-  const totalElevesCount = Array.isArray(totalElevesData)
-    ? totalElevesData.length
-    : typeof totalElevesData === 'number'
-    ? totalElevesData
-    : 0;
-
-  const garcons = useMemo(() => totalElevesArray.filter((e) => isMale(e.sexe)).length, [totalElevesArray]);
-  const filles = useMemo(() => totalElevesArray.filter((e) => !isMale(e.sexe)).length, [totalElevesArray]);
+  // KPIs calculés depuis la vraie liste d'élèves (totalEleves dans stats est un number, pas un tableau)
+  const totalElevesCount = eleves?.length ?? 0;
+  const garcons = useMemo(() => eleves?.filter((e) => isMale(e.sexe)).length ?? 0, [eleves]);
+  const filles = useMemo(() => eleves?.filter((e) => !isMale(e.sexe)).length ?? 0, [eleves]);
   const nbClasses = stats?.statistiquesParClasse?.length ?? 0;
 
   const allSelected = filtered.length > 0 && selectedIds.size === filtered.length;
@@ -228,7 +226,7 @@ export default function ElevesPage() {
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {isLoadingStats ? (
+        {isLoadingEleves ? (
           Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
         ) : (
           <>

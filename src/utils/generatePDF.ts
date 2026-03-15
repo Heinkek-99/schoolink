@@ -11,6 +11,14 @@ function getLogo(): string | null {
   try { return localStorage.getItem('etablissement_logo'); } catch { return null; }
 }
 
+function getSignature(): string | null {
+  try { return localStorage.getItem('etablissement_signature'); } catch { return null; }
+}
+ 
+function getCachet(): string | null {
+  try { return localStorage.getItem('etablissement_cachet'); } catch { return null; }
+}
+
 function drawCameroonFlag(doc: jsPDF, x: number, y: number, w: number, h: number) {
   const sw = w / 3;
   // Green stripe (left)
@@ -364,6 +372,8 @@ export function generateStudentCardPDF(data: {
   const doc = new jsPDF({ format: [85.6, 54], unit: 'mm', orientation: 'landscape' });
   const etab = getEtablissement();
   const logo = getLogo();
+  const signature = getSignature();
+  const cachet = getCachet();
   const w = 85.6;
   const h = 54;
 
@@ -372,14 +382,26 @@ export function generateStudentCardPDF(data: {
   doc.rect(0, 0, w, h, 'F');
 
   // Outer border with double line
-  doc.setDrawColor(30, 58, 95);
-  doc.setLineWidth(0.6);
-  doc.rect(1.5, 1.5, w - 3, h - 3);
+  // doc.setDrawColor(30, 58, 95);
+  // doc.setLineWidth(0.6);
+  doc.rect(1.2, 1.5, w - 2.5, h - 2.5, 'S');
   doc.setLineWidth(0.2);
-  doc.rect(2.5, 2.5, w - 5, h - 5);
+  // doc.rect(2.5, 2.5, w - 5, h - 5);
+
+
+  // Texte vertical
+  doc.setFontSize(3.8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 0, 0);
+  doc.text('SCHOOL IDENTITY CARD', 0 + 3.5, 30 + 2 - 2, { angle: 90, align: 'left' });
+  doc.setFontSize(3.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 58, 95);
+  doc.text('CARTE IDENTITE SCOLAIRE', 0+ 3.5, 50 + 2 - 2, { angle: 90, align: 'left' });
+  doc.setTextColor(0, 0, 0);
 
   // ─── Top band: national colors ───
-  doc.setFillColor(0, 128, 0);
+  doc.setFillColor(245, 248, 255);
   doc.rect(2.5, 2.5, w - 5, 9, 'F');
 
   // Flag stripes at the very top of the band
@@ -390,6 +412,7 @@ export function generateStudentCardPDF(data: {
   doc.rect(4 + flagW / 3, 3.5, flagW / 3, 7, 'F');
   doc.setFillColor(252, 209, 22);
   doc.rect(4 + (flagW / 3) * 2, 3.5, flagW / 3, 7, 'F');
+  
   // Star on flag
   drawStar(doc, 4 + flagW / 2, 7, 1.5);
 
@@ -401,18 +424,18 @@ export function generateStudentCardPDF(data: {
   // Country text in the band
   doc.setFontSize(5);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0);
   doc.text('REPUBLIC OF CAMEROON', w / 2, 6, { align: 'center' });
   doc.setFontSize(3.5);
   doc.setFont('helvetica', 'italic');
   doc.text('Peace - Work - Fatherland', w / 2, 8.5, { align: 'center' });
   doc.setTextColor(0, 0, 0);
 
-  // Thin colored lines under the band
-  doc.setFillColor(206, 17, 38);
-  doc.rect(2.5, 11.5, w - 5, 0.8, 'F');
-  doc.setFillColor(252, 209, 22);
-  doc.rect(2.5, 12.3, w - 5, 0.8, 'F');
+  // // Thin colored lines under the band
+  // doc.setFillColor(206, 17, 38);
+  // doc.rect(2.5, 11.5, w - 5, 0.8, 'F');
+  // doc.setFillColor(252, 209, 22);
+  // doc.rect(2.5, 12.3, w - 5, 0.8, 'F');
 
   // ─── School name ───
   doc.setFontSize(6.5);
@@ -473,7 +496,7 @@ export function generateStudentCardPDF(data: {
   doc.rect(photoX + 0.5, photoY + 0.5, photoW, photoH, 'F');
   doc.setFillColor(255, 255, 255);
   doc.rect(photoX, photoY, photoW, photoH, 'F');
-  doc.setDrawColor(30, 58, 95);
+  doc.setDrawColor(255, 255, 255);
   doc.setLineWidth(0.3);
   doc.rect(photoX, photoY, photoW, photoH);
 
@@ -499,6 +522,22 @@ export function generateStudentCardPDF(data: {
     doc.setTextColor(0, 0, 0);
   }
 
+  // Cachet (overlapping coin bas-gauche de la photo)
+  const cachetSize = 16;
+  const cachetX = photoX - cachetSize / 2 + 2;
+  const cachetY = photoY + photoH - cachetSize / 2 + 2;
+  if (cachet) {
+    try { doc.addImage(cachet, 'PNG', cachetX, cachetY, cachetSize, cachetSize); } catch {}
+  } else {
+    // Cachet simulé en cercle
+    doc.setDrawColor(30, 58, 120);
+    doc.setLineWidth(0.4);
+    doc.circle(cachetX + cachetSize / 2, cachetY + cachetSize / 2, cachetSize / 2);
+    doc.setFontSize(2.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 58, 120);
+    doc.text('Le Principal', cachetX + cachetSize / 2, cachetY + cachetSize / 2 + 1, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+  }
+
   // Stamp area under photo
   doc.setFontSize(3);
   doc.setFont('helvetica', 'italic');
@@ -507,14 +546,19 @@ export function generateStudentCardPDF(data: {
   doc.setTextColor(0, 0, 0);
 
   // ─── Bottom bar ───
-  doc.setFillColor(30, 58, 95);
-  doc.rect(2.5, h - 6.5, w - 5, 4, 'F');
-  doc.setFontSize(2.8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(255, 255, 255);
-  const contact = [etab.ville, etab.telephone ? `Tél: ${etab.telephone}` : '', etab.email].filter(Boolean).join(' | ');
-  doc.text(contact || 'www.schoolflow.cm', w / 2, h - 4.2, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
+  // doc.setFillColor(30, 58, 95);
+  // doc.rect(2.5, h - 6.5, w - 5, 4, 'F');
+  // doc.setFontSize(2.8);
+  // doc.setFont('helvetica', 'normal');
+  // doc.setTextColor(255, 255, 255);
+  // const contact = [etab.ville, etab.telephone ? `Tél: ${etab.telephone}` : '', etab.email].filter(Boolean).join(' | ');
+  // doc.text(contact || 'www.schoolflow.cm', w / 2, h - 4.2, { align: 'center' });
+  // doc.setTextColor(0, 0, 0);
+  
+  // ─── Signature directeur ───
+  if (signature) {
+    try { doc.addImage(signature, 'PNG', 50, labelX + 30 , 30, 10); } catch {}
+  }
 
   // NB note
   doc.setFontSize(2.5);
@@ -550,6 +594,7 @@ export function generateAllStudentCardsPDF(students: {
   const cols = 2;
   const rows = 4;
   const etab = getEtablissement();
+
 
   students.forEach((student, i) => {
     const posOnPage = i % (cols * rows);

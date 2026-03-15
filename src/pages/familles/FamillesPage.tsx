@@ -133,11 +133,19 @@ export default function FamillesPage() {
   }, [familles, statusFilter, sort]);
 
   // KPI computations
+  // soldeGlobal < 0 = la famille doit de l'argent (convention dette négative)
+  // fallback sur statutPaiement si soldeGlobal est mal renvoyé par l'API
   const kpis = useMemo(() => {
     const list = familles ?? [];
     const total = list.length;
-    const impayees = list.filter(f => f.soldeGlobal < 0).length;
-    const totalImpaye = list.reduce((sum, f) => sum + Math.max(0, -f.soldeGlobal), 0);
+    const impayees = list.filter(f =>
+      f.soldeGlobal < 0 || f.statutPaiement === 'Impayé' || f.statutPaiement === 'Partiel'
+    ).length;
+    const totalImpaye = list.reduce((sum, f) => {
+      // Si soldeGlobal < 0 : dette = valeur absolue. Si >= 0 : à jour.
+      const dette = f.soldeGlobal < 0 ? Math.abs(f.soldeGlobal) : 0;
+      return sum + dette;
+    }, 0);
     return { total, impayees, totalImpaye };
   }, [familles]);
 

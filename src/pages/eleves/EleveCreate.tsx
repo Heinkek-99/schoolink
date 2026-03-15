@@ -119,6 +119,7 @@ export default function EleveCreate() {
   const handleConfirm = () => {
     if (!step1Data) return;
     const step2Values = form2.getValues();
+    // Enum C# : Masculin=1, Feminin=2
     const sexeValue = step1Data.sexe === 'M' ? 1 : 2;
     const payload: any = {
       nom: step1Data.nom,

@@ -4,8 +4,11 @@ export interface Eleve {
   matricule: string;
   nom: string;
   prenom: string;
+  sexe: string;       // 'M' | 'F' | 'Masculin' | 'Féminin' | '1' | '2'
   classe: string;
+  classeId?: string;
   famille: string;
+  familleId?: string;
   solde: number;
   statut: string;
 }
