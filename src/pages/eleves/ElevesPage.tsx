@@ -322,8 +322,8 @@ export default function ElevesPage() {
       )}
 
       <ConfirmDeleteModal
-        open={!!deletingEleve}
-        onOpenChange={(open) => { if (!open) setDeletingEleve(null); }}
+        open={!!deletingEleve || bulkDeleting}
+        onOpenChange={(open) => { if (!open) { setDeletingEleve(null); setBulkDeleting(false); } }}
         description={
           deletingEleve === null && bulkDeleting
             ? `${selectedIds.size} élève(s) seront définitivement supprimés.`
