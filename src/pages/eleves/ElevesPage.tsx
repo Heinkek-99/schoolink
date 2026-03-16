@@ -312,9 +312,21 @@ export default function ElevesPage() {
       <ConfirmDeleteModal
         open={!!deletingEleve}
         onOpenChange={(open) => { if (!open) setDeletingEleve(null); }}
-        description={`L'élève ${deletingEleve?.prenom ?? ''} ${deletingEleve?.nom ?? ''} sera définitivement supprimé.`}
-        onConfirm={handleDeleteConfirm}
+        description={
+          deletingEleve === null && bulkDeleting
+            ? `${selectedIds.size} élève(s) seront définitivement supprimés.`
+            : `L'élève ${deletingEleve?.prenom ?? ''} ${deletingEleve?.nom ?? ''} sera définitivement supprimé.`
+        }
+        onConfirm={bulkDeleting ? handleBulkDelete : handleDeleteConfirm}
         isPending={deleteMutation.isPending}
+      />
+
+      <BulkActionBar
+        count={selectedIds.size}
+        entityLabel="élève"
+        onClear={() => setSelectedIds(new Set())}
+        onExport={handleExportCSV}
+        onDelete={canDelete('eleves') ? () => { setBulkDeleting(true); setDeletingEleve(null); } : undefined}
       />
     </div>
   );
