@@ -315,11 +315,22 @@ export default function FamillesPage() {
       )}
 
       <ConfirmDeleteModal
-        open={!!deletingFamille}
-        onOpenChange={(open) => { if (!open) setDeletingFamille(null); }}
-        description={`La famille ${deletingFamille?.nomPere ?? ''} ${deletingFamille?.prenomPere ?? ''}${deletingFamille && deletingFamille.nombreEnfants > 0 ? ` et ses ${deletingFamille.nombreEnfants} enfant(s)` : ''} sera définitivement supprimée.`}
-        onConfirm={handleDeleteConfirm}
+        open={!!deletingFamille || bulkDeleting}
+        onOpenChange={(open) => { if (!open) { setDeletingFamille(null); setBulkDeleting(false); } }}
+        description={
+          bulkDeleting
+            ? `${selectedIds.size} famille(s) seront définitivement supprimées.`
+            : `La famille ${deletingFamille?.nomPere ?? ''} ${deletingFamille?.prenomPere ?? ''}${deletingFamille && deletingFamille.nombreEnfants > 0 ? ` et ses ${deletingFamille.nombreEnfants} enfant(s)` : ''} sera définitivement supprimée.`
+        }
+        onConfirm={bulkDeleting ? handleBulkDelete : handleDeleteConfirm}
         isPending={deleteMutation.isPending}
+      />
+
+      <BulkActionBar
+        count={selectedIds.size}
+        entityLabel="famille"
+        onClear={() => setSelectedIds(new Set())}
+        onDelete={canDelete('familles') ? () => { setBulkDeleting(true); setDeletingFamille(null); } : undefined}
       />
 
       {/* Create Modal */}
