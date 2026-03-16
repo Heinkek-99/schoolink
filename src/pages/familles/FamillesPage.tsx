@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNotificationStore } from '@/store/notificationStore';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActionBar } from '@/components/shared/BulkActionBar';
 import type { Famille } from '@/types/famille.types';
 import { useRef } from 'react';
 
@@ -103,8 +104,20 @@ export default function FamillesPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [deletingFamille, setDeletingFamille] = useState<Famille | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [sort, setSort] = useState<SortState>({ key: '', direction: null });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    for (const id of ids) {
+      await new Promise<void>((resolve) => {
+        deleteMutation.mutate(id, { onSettled: () => resolve() });
+      });
+    }
+    setSelectedIds(new Set());
+    setBulkDeleting(false);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
@@ -302,11 +315,22 @@ export default function FamillesPage() {
       )}
 
       <ConfirmDeleteModal
-        open={!!deletingFamille}
-        onOpenChange={(open) => { if (!open) setDeletingFamille(null); }}
-        description={`La famille ${deletingFamille?.nomPere ?? ''} ${deletingFamille?.prenomPere ?? ''}${deletingFamille && deletingFamille.nombreEnfants > 0 ? ` et ses ${deletingFamille.nombreEnfants} enfant(s)` : ''} sera définitivement supprimée.`}
-        onConfirm={handleDeleteConfirm}
+        open={!!deletingFamille || bulkDeleting}
+        onOpenChange={(open) => { if (!open) { setDeletingFamille(null); setBulkDeleting(false); } }}
+        description={
+          bulkDeleting
+            ? `${selectedIds.size} famille(s) seront définitivement supprimées.`
+            : `La famille ${deletingFamille?.nomPere ?? ''} ${deletingFamille?.prenomPere ?? ''}${deletingFamille && deletingFamille.nombreEnfants > 0 ? ` et ses ${deletingFamille.nombreEnfants} enfant(s)` : ''} sera définitivement supprimée.`
+        }
+        onConfirm={bulkDeleting ? handleBulkDelete : handleDeleteConfirm}
         isPending={deleteMutation.isPending}
+      />
+
+      <BulkActionBar
+        count={selectedIds.size}
+        entityLabel="famille"
+        onClear={() => setSelectedIds(new Set())}
+        onDelete={canDelete('familles') ? () => { setBulkDeleting(true); setDeletingFamille(null); } : undefined}
       />
 
       {/* Create Modal */}

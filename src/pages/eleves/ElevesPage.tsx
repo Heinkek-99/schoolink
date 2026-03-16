@@ -20,6 +20,7 @@ import { useDashboardStats } from '@/hooks/useDashboard';
 import type { Eleve } from '@/types/eleve.types';
 import toast from 'react-hot-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActionBar } from '@/components/shared/BulkActionBar';
 
 function ActionMenu({ eleve, canEdit, canDelete, onDelete }: {
   eleve: Eleve;
@@ -99,7 +100,19 @@ export default function ElevesPage() {
   const [sort, setSort] = useState<SortState>({ key: '', direction: null });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deletingEleve, setDeletingEleve] = useState<Eleve | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const deleteMutation = useDeleteEleve();
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    for (const id of ids) {
+      await new Promise<void>((resolve) => {
+        deleteMutation.mutate(id, { onSettled: () => resolve() });
+      });
+    }
+    setSelectedIds(new Set());
+    setBulkDeleting(false);
+  };
 
   const handleSearch = useCallback((q: string) => setSearch(q), []);
 
@@ -309,11 +322,23 @@ export default function ElevesPage() {
       )}
 
       <ConfirmDeleteModal
-        open={!!deletingEleve}
-        onOpenChange={(open) => { if (!open) setDeletingEleve(null); }}
-        description={`L'élève ${deletingEleve?.prenom ?? ''} ${deletingEleve?.nom ?? ''} sera définitivement supprimé.`}
-        onConfirm={handleDeleteConfirm}
+        open={!!deletingEleve || bulkDeleting}
+        onOpenChange={(open) => { if (!open) { setDeletingEleve(null); setBulkDeleting(false); } }}
+        description={
+          deletingEleve === null && bulkDeleting
+            ? `${selectedIds.size} élève(s) seront définitivement supprimés.`
+            : `L'élève ${deletingEleve?.prenom ?? ''} ${deletingEleve?.nom ?? ''} sera définitivement supprimé.`
+        }
+        onConfirm={bulkDeleting ? handleBulkDelete : handleDeleteConfirm}
         isPending={deleteMutation.isPending}
+      />
+
+      <BulkActionBar
+        count={selectedIds.size}
+        entityLabel="élève"
+        onClear={() => setSelectedIds(new Set())}
+        onExport={handleExportCSV}
+        onDelete={canDelete('eleves') ? () => { setBulkDeleting(true); setDeletingEleve(null); } : undefined}
       />
     </div>
   );

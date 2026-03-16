@@ -1,8 +1,9 @@
-import { Search, User, Sun, Moon, Menu } from 'lucide-react';
+import { User, Sun, Moon, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { useAppStore } from '@/store/appStore';
 import { NotificationPanel } from './NotificationPanel';
+import { GlobalSearch } from './GlobalSearch';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function Header() {
@@ -35,14 +36,7 @@ export function Header() {
           </div>
         )}
 
-        <div className={`flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5 sm:py-2 ${isMobile ? 'flex-1 min-w-0' : 'w-72'}`}>
-          <Search size={16} className="text-muted-foreground shrink-0" strokeWidth={1.5} />
-          <input
-            type="text"
-            placeholder="Rechercher..."
-            className="bg-transparent outline-none text-sm flex-1 text-foreground placeholder:text-muted-foreground min-w-0"
-          />
-        </div>
+        <GlobalSearch />
       </div>
 
       {/* Right */}
