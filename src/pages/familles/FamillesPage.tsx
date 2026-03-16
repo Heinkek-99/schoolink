@@ -104,8 +104,20 @@ export default function FamillesPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [deletingFamille, setDeletingFamille] = useState<Famille | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [sort, setSort] = useState<SortState>({ key: '', direction: null });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    for (const id of ids) {
+      await new Promise<void>((resolve) => {
+        deleteMutation.mutate(id, { onSettled: () => resolve() });
+      });
+    }
+    setSelectedIds(new Set());
+    setBulkDeleting(false);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
