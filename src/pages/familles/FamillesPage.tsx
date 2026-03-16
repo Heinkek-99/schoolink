@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNotificationStore } from '@/store/notificationStore';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActionBar } from '@/components/shared/BulkActionBar';
 import type { Famille } from '@/types/famille.types';
 import { useRef } from 'react';
 
