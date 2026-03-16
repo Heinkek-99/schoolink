@@ -100,7 +100,19 @@ export default function ElevesPage() {
   const [sort, setSort] = useState<SortState>({ key: '', direction: null });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deletingEleve, setDeletingEleve] = useState<Eleve | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const deleteMutation = useDeleteEleve();
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    for (const id of ids) {
+      await new Promise<void>((resolve) => {
+        deleteMutation.mutate(id, { onSettled: () => resolve() });
+      });
+    }
+    setSelectedIds(new Set());
+    setBulkDeleting(false);
+  };
 
   const handleSearch = useCallback((q: string) => setSearch(q), []);
 
