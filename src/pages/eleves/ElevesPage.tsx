@@ -20,6 +20,7 @@ import { useDashboardStats } from '@/hooks/useDashboard';
 import type { Eleve } from '@/types/eleve.types';
 import toast from 'react-hot-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActionBar } from '@/components/shared/BulkActionBar';
 
 function ActionMenu({ eleve, canEdit, canDelete, onDelete }: {
   eleve: Eleve;
