@@ -10,6 +10,10 @@ export const paiementsApi = {
     const response = await api.get(`/api/Paiements/famille/${familleId}`);
     return response.data;
   },
+  getByNumero: async (numero: string): Promise<Paiement[]> => {
+    const response = await api.get(`/api/Paiements/${numero}`);
+    return response.data;
+  },
   getTypeFrais: async (): Promise<TypeFrais[]> => {
     const response = await api.get('/api/TypeFrais');
     return response.data;

@@ -82,7 +82,8 @@ function isMale(sexe: any): boolean {
   // Enum C# Masculin=1, Feminin=2
   // API peut retourner : 'Masculin', 'M', 1, '1' pour masculin
   // et 'Feminin' (sans accent), 'Féminin', 'F', 2, '2' pour féminin
-  if (sexe === 'Feminin' || sexe === 'Féminin' || sexe === 'F' || sexe === 2 || sexe === '2') return false;
+  if (sexe === 'Feminin' || sexe === 'Féminin' || sexe === 'F' || sexe === 2 || sexe === '2') 
+    return false;
   return sexe === 'Masculin' || sexe === 'M' || sexe === 1 || sexe === '1';
 }
 

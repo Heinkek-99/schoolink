@@ -13,6 +13,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { getRecoveryRate } from '@/utils/constants';
+import { PaiementHistorique } from '@/components/shared/PaiementHistorique';
 
 const editFamilleSchema = z.object({
   nomPere: z.string().min(1, 'Nom requis'),
@@ -33,7 +34,7 @@ export default function FamilleDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: famille, isLoading } = useFamille(id!);
-  const { data: paiements } = usePaiementsByFamille(id!);
+  const { data: paiements, isLoading: paiementsLoading } = usePaiementsByFamille(id!);
   const updateMutation = useUpdateFamille();
   const deleteMutation = useDeleteFamille();
   const { canEdit, canDelete, isAdmin } = usePermissions();
@@ -223,6 +224,14 @@ export default function FamilleDetail() {
       )}
 
       {activeTab === 'paiements' && (
+        <PaiementHistorique 
+          paiements={paiements || []} 
+          isLoading={paiementsLoading}
+          familleNom={`${famille.nomPere} ${famille.prenomPere || ''}`.trim()}
+        />
+      )}
+
+      {/* {activeTab === 'paiements' && (
         <div className="bg-card rounded-xl border shadow-sm p-5">
           {!paiements?.length ? (
             <div className="text-center text-muted-foreground py-8">Aucun paiement enregistré</div>
@@ -241,7 +250,7 @@ export default function FamilleDetail() {
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {activeTab === 'informations' && (
         <div className="bg-card rounded-xl border shadow-sm p-6">
